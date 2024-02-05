@@ -1,6 +1,14 @@
-CREATE SCHEMA java_cycle;
+CREATE SCHEMA entity_cycle;
 
-CREATE TABLE java_cycle.creature
+CREATE TABLE entity_cycle.address
+(
+    address_id  SERIAL NOT NULL,
+    city        TEXT   NOT NULL,
+    postal_code TEXT   NOT NULL,
+    street      TEXT   NOT NULL,
+    PRIMARY KEY (address_id)
+);
+CREATE TABLE entity_cycle.creature
 (
     creature_id SERIAL NOT NULL,
     age         INT    NOT NULL,
@@ -11,18 +19,10 @@ CREATE TABLE java_cycle.creature
     PRIMARY KEY (creature_id),
     UNIQUE (address_id),
     CONSTRAINT creature_address FOREIGN KEY (address_id)
-        REFERENCES java_cycle.address (address_id)
-);
-CREATE TABLE java_cycle.address
-(
-    address_id  SERIAL NOT NULL,
-    city        TEXT   NOT NULL,
-    postal_code TEXT   NOT NULL,
-    street      TEXT   NOT NULL,
-    PRIMARY KEY (address_id)
+        REFERENCES entity_cycle.address (address_id)
 );
 
-CREATE TABLE java_cycle.dead_creature
+CREATE TABLE entity_cycle.dead_creature
 (
     dead_creature_id SERIAL NOT NULL,
     cycles_lived     INT    NOT NULL,
@@ -32,7 +32,7 @@ CREATE TABLE java_cycle.dead_creature
     PRIMARY KEY (dead_creature_id)
 );
 
-CREATE TABLE java_cycle.debuff
+CREATE TABLE entity_cycle.debuff
 (
     debuff_id   SERIAL NOT NULL,
     description TEXT   NOT NULL,
@@ -40,19 +40,19 @@ CREATE TABLE java_cycle.debuff
     PRIMARY KEY (debuff_id)
 );
 
-CREATE TABLE java_cycle.injury
+CREATE TABLE entity_cycle.injury
 (
     injury_id   SERIAL NOT NULL,
     debuff_id   INT    NOT NULL,
     creature_id INT    NOT NULL,
     PRIMARY KEY (injury_id),
     CONSTRAINT fk_injury_debuff FOREIGN KEY (debuff_id)
-        REFERENCES java_cycle.debuff (debuff_id),
+        REFERENCES entity_cycle.debuff (debuff_id),
     CONSTRAINT fk_injury_creature FOREIGN KEY (creature_id)
-        REFERENCES java_cycle.creature (creature_id)
+        REFERENCES entity_cycle.creature (creature_id)
 );
 
-CREATE TABLE java_cycle.food
+CREATE TABLE entity_cycle.food
 (
     food_id           SERIAL NOT NULL,
     nutritional_value INT    NOT NULL,
@@ -60,5 +60,5 @@ CREATE TABLE java_cycle.food
     creature_id       INT    NOT NULL,
     PRIMARY KEY (food_id),
     CONSTRAINT fk_food_creature FOREIGN KEY (food_id)
-        REFERENCES java_cycle.creature (creature_id)
+        REFERENCES entity_cycle.creature (creature_id)
 );
