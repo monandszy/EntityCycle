@@ -7,10 +7,8 @@ import lombok.With;
 @Builder
 @With
 @Value
-public class DeadCreature {
+public class Injury {
    String id;
-   Integer cyclesLived;
-   String name;
-   Integer birthCycle;
-   Integer causeOfDeath;
+   Debuff debuff;
+   Creature creature;
 }
