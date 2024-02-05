@@ -79,7 +79,7 @@ dependencies {
     testImplementation "org.testcontainers:postgresql:$testcontainersVersion"
 
     implementation "de.elnarion.util:plantuml-generator-util:$plantUMLVersion"
-    compileOnly 'jakarta.platform:jakarta.jakartaee-api:10.0.0'
+    implementation 'jakarta.platform:jakarta.jakartaee-api:10.0.0'
 }
 
 //jar {
