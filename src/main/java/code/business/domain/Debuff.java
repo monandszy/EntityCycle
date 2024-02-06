@@ -1,5 +1,6 @@
 package code.business.domain;
 
+import code.infrastructure.database.entity.DebuffType;
 import lombok.Builder;
 import lombok.Value;
 import lombok.With;
@@ -10,5 +11,5 @@ import lombok.With;
 public class Debuff {
    Integer id;
    String description;
-   Integer value;
+   DebuffType debuffType;
 }

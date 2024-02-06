@@ -18,6 +18,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.time.OffsetDateTime;
 import java.util.Set;
 
 @Entity
@@ -41,6 +42,9 @@ public class AddressEntity {
 
    @Column(name = "postal_code")
    private String postalCode;
+
+   @Column(name = "time_created")
+   private OffsetDateTime timeCreated;
 
    @Column(name = "street")
    private String street;

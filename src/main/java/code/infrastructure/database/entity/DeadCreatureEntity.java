@@ -34,9 +34,6 @@ public class DeadCreatureEntity {
    @Column(name = "cycles_lived")
    private Integer cyclesLived;
 
-   @Column(name = "time_lived")
-   private OffsetDateTime timeLived;
-
    @Column(name = "name")
    private String name;
 

@@ -2,10 +2,11 @@ CREATE SCHEMA entity_cycle;
 
 CREATE TABLE entity_cycle.address
 (
-    address_id  SERIAL NOT NULL,
-    city        TEXT   NOT NULL,
-    postal_code TEXT   NOT NULL,
-    street      TEXT   NOT NULL,
+    address_id   SERIAL      NOT NULL,
+    city         TEXT        NOT NULL,
+    time_created timestamptz NOT NULL,
+    postal_code  TEXT        NOT NULL,
+    street       TEXT        NOT NULL,
     PRIMARY KEY (address_id)
 );
 CREATE TABLE entity_cycle.creature
@@ -23,12 +24,11 @@ CREATE TABLE entity_cycle.creature
 
 CREATE TABLE entity_cycle.dead_creature
 (
-    dead_creature_id SERIAL                   NOT NULL,
-    cycles_lived     INT                      NOT NULL,
-    time_lived       TIMESTAMP WITH TIME ZONE NOT NULL,
-    name             TEXT                     NOT NULL,
-    birth_cycle      INT                      NOT NULL,
-    cause_of_death   TEXT                     NOT NULL,
+    dead_creature_id SERIAL NOT NULL,
+    cycles_lived     INT    NOT NULL,
+    name             TEXT   NOT NULL,
+    birth_cycle      INT    NOT NULL,
+    cause_of_death   TEXT   NOT NULL,
     PRIMARY KEY (dead_creature_id)
 );
 
