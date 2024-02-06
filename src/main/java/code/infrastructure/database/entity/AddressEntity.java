@@ -28,7 +28,7 @@ public class AddressEntity {
    @Id
    @GeneratedValue(strategy = GenerationType.IDENTITY)
    @Column(name = "address_id")
-   private String id;
+   private Integer id;
 
    @Column(name = "city")
    private String city;

@@ -28,7 +28,7 @@ public class CreatureEntity {
    @Id
    @GeneratedValue(strategy = GenerationType.IDENTITY)
    @Column(name = "creature_id")
-   private String id;
+   private Integer id;
 
    @Column(name = "age")
    private Integer age;

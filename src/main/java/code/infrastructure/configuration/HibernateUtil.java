@@ -76,12 +76,14 @@ public class HibernateUtil {
    }
 
    @SneakyThrows
-   static Session getSession() {
-      return sessionFactory.openSession();
+   public static Session getSession() {
+      Session session = sessionFactory.openSession();
+      Objects.requireNonNull(session);
+      return session;
    }
 
    @SneakyThrows
-   static void closeSessionFactory() {
+   public static void closeSessionFactory() {
       sessionFactory.close();
    }
 }

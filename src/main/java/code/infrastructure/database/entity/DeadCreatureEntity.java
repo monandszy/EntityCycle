@@ -29,7 +29,7 @@ public class DeadCreatureEntity {
    @Id
    @GeneratedValue(strategy = GenerationType.IDENTITY)
    @Column(name = "dead_creature_id")
-   private String id;
+   private Integer id;
 
    @Column(name = "cycles_lived")
    private Integer cyclesLived;

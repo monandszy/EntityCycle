@@ -29,7 +29,7 @@ public class FoodEntity {
    @Id
    @GeneratedValue(strategy = GenerationType.IDENTITY)
    @Column(name = "food_id")
-   private String id;
+   private Integer id;
 
    @Column(name = "nutritional_value")
    private String nutritionalValue;
