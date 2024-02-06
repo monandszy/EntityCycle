@@ -9,6 +9,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -36,12 +37,12 @@ public class FoodEntity {
    private Integer id;
 
    @Column(name = "nutritional_value")
-   private String nutritionalValue;
+   private Integer nutritionalValue;
 
    @Column(name = "description")
    private String description;
 
-   @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-   @JoinColumn(name = "creature_id", unique = true)
+   @ManyToOne(fetch = FetchType.LAZY)
+   @JoinColumn(name = "creature_id")
    private CreatureEntity creature;
 }

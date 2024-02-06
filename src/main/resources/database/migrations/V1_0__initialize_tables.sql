@@ -37,13 +37,15 @@ CREATE TABLE entity_cycle.debuff
     debuff_id   SERIAL NOT NULL,
     description TEXT   NOT NULL,
     value       TEXT   NOT NULL,
+    saturation_drain INT NOT NULL
     CONSTRAINT value_in CHECK (
         value IN
         (
-         'debuff1',
-         'debuff2',
-         'debuff3'
+         'poisoning',
+         'starvation',
+         'fracture'
             )),
+    UNIQUE (value),
     PRIMARY KEY (debuff_id)
 );
 
@@ -66,7 +68,6 @@ CREATE TABLE entity_cycle.food
     description       TEXT   NOT NULL,
     creature_id       INT    NOT NULL,
     PRIMARY KEY (food_id),
-    UNIQUE (creature_id),
     CONSTRAINT fk_food_creature FOREIGN KEY (food_id)
         REFERENCES entity_cycle.creature (creature_id)
 );

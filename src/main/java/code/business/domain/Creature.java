@@ -1,12 +1,19 @@
 package code.business.domain;
 
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import lombok.Value;
 import lombok.With;
+
+import java.util.List;
+import java.util.Set;
 
 @Builder
 @With
 @Value
+@ToString(exclude = "foods")
+@EqualsAndHashCode(exclude = "foods")
 public class Creature {
    String id;
    Integer age;
@@ -14,4 +21,5 @@ public class Creature {
    Integer saturation;
    Integer birthCycle;
    Address address;
+   Set<Food> foods;
 }

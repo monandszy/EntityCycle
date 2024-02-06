@@ -1,5 +1,6 @@
 package code.infrastructure.database.entity;
 
+import code.business.domain.Food;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,6 +12,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -27,8 +29,8 @@ import java.util.Set;
 @Builder
 @Getter
 @Setter
-@ToString(exclude = {"address", "food", "debuffs"})
-@EqualsAndHashCode(exclude = {"address", "food", "debuffs"})
+@ToString(exclude = {"address", "foods", "debuffs"})
+@EqualsAndHashCode(exclude = {"address", "foods", "debuffs"})
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "creature", schema = "entity_cycle")
@@ -55,10 +57,10 @@ public class CreatureEntity {
    @JoinColumn(name = "address_id")
    private AddressEntity address;
 
-   @OneToOne(fetch = FetchType.LAZY, mappedBy = "creature", cascade = CascadeType.ALL)
-   private FoodEntity food;
+   @OneToMany(fetch = FetchType.LAZY, mappedBy = "creature", cascade = CascadeType.ALL)
+   private Set<FoodEntity> foods;
 
-   @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
+   @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
    @JoinTable(
            name = "injury",
            joinColumns = {@JoinColumn(name = "creature_id")},

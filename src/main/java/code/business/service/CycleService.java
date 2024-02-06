@@ -1,6 +1,8 @@
 package code.business.service;
 
+import code.business.dao.AgeDAO;
 import code.business.dao.CreatureDAO;
+import code.business.dao.SaturationDAO;
 import code.business.domain.Creature;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,9 +18,12 @@ public class CycleService {
    @Getter
    @Setter
    private static Integer currentCycle = 0;
+   private final static Integer priorityLimit = 100;
 
-   CreatureDAO creatureDAO;
-   DataCreationService dataCreationService;
+   private final CreatureDAO creatureDAO;
+   private final SaturationDAO saturationDAO;
+   private final AgeDAO ageDAO;
+   private final DataCreationService dataCreationService;
 
 
    public void createCreatures() {
@@ -28,21 +33,22 @@ public class CycleService {
    }
 
    public void assignFood() {
-      List<Creature> prioritized = creatureDAO.getPrioritized(); // calculate prioritization
-      creatureDAO.createFood(prioritized); // add piece of food to prioritized
+      List<Creature> prioritized = creatureDAO.getPrioritized(priorityLimit); // calculate prioritization
+      dataCreationService.addFood(prioritized); // add piece of food to prioritized
+      creatureDAO.updateFood(prioritized);
    }
 
    public void calculateSaturation() {
-      creatureDAO.eatIfHungry(); // remove food, recalculate saturation
-      creatureDAO.addFoodPoisoningDebuff(); // random
-      creatureDAO.killStarving(); // if saturation <= 0 and starving -> kill
-      creatureDAO.addStarvationDebuff(); // one chance to survive starving kill
+      saturationDAO.eatIfHungry(); // remove food, recalculate saturation
+      saturationDAO.addFoodPoisoningDebuff(); // random
+      saturationDAO.killStarving(); // if saturation <= 0 and starving -> kill
+      saturationDAO.addStarvationDebuff(); // one chance to survive starving kill
    }
 
    public void advanceAge() {
-      creatureDAO.advanceSaturation();
-      creatureDAO.advanceAge(); // move age by one
-      creatureDAO.assignAgeDebuff(); // random
+      ageDAO.advanceSaturation();
+      ageDAO.advanceAge(); // move age by one
+      ageDAO.assignAgeDebuff(); // random
    }
 
    public void runCycles(int cycleNumber) {
@@ -54,5 +60,4 @@ public class CycleService {
          currentCycle++;
       }
    }
-
 }

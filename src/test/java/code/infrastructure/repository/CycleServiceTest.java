@@ -1,8 +1,17 @@
 package code.infrastructure.repository;
 
 import code.business.domain.Creature;
-import code.infrastructure.configuration.TestApplicationConfiguration;
+import code.business.service.DataCreationService;
+import code.infrastructure.configuration.ApplicationConfiguration;
+import code.infrastructure.configuration.HibernateUtil;
+import code.infrastructure.database.entity.CreatureEntity;
+import code.infrastructure.database.mapper.CreatureEntityMapper;
+import code.infrastructure.database.repository.AgeRepository;
+import code.infrastructure.database.repository.CreatureRepository;
+import code.infrastructure.database.repository.SaturationRepository;
 import lombok.AllArgsConstructor;
+import org.hibernate.Session;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -14,8 +23,11 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.List;
 
+import static code.infrastructure.database.repository.CreatureRepository.OFFSPRING_FOOD_TAKEN;
+import static code.infrastructure.database.repository.CreatureRepository.OFFSPRING_FOOD_THRESHOLD;
+
 @Testcontainers
-@SpringJUnitConfig(value = {TestApplicationConfiguration.class})
+@SpringJUnitConfig(value = {ApplicationConfiguration.class})
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 class CycleServiceTest {
 
@@ -29,46 +41,77 @@ class CycleServiceTest {
       registry.add("jakarta.persistence.jdbc.password", postgreSQL::getPassword);
    }
 
-   @Test
-   void testGetOffspringNumber() {
-      Integer toBeCreatedCounter = creatureDAO.getOffspringNumber(); // remove 3 food if above threshold
-   }
+   private final CreatureRepository creatureRepository;
+   private final SaturationRepository saturationRepository;
+   private final AgeRepository ageRepository;
+   private final DataCreationService dataCreationService;
+   private final CreatureEntityMapper creatureEntityMapper;
+   private final HibernateUtil hibernateUtil; // don't use
+
 
    @Test
-   void testCreateCreatures() {
-      List<Creature> creatures = dataCreationService.getRandomCreatureList(toBeCreatedCounter);
-      creatureDAO.addAll(creatures);
+   void testGetOffspringNumber() {
+      try (Session session = HibernateUtil.getSession()) {
+         //given
+         Creature meetingCriteriaCreature = dataCreationService.getRandomCreature().withSaturation(OFFSPRING_FOOD_THRESHOLD);
+         CreatureEntity meetingEntity = creatureEntityMapper.mapToEntity(meetingCriteriaCreature);
+         Creature notMeetingCriteriaCreature = dataCreationService.getRandomCreature().withSaturation(0);
+         CreatureEntity notMeetingEntity = creatureEntityMapper.mapToEntity(notMeetingCriteriaCreature);
+         session.persist(meetingEntity);
+         session.persist(notMeetingEntity);
+         session.flush();
+
+         //when
+         Integer toBeCreatedCounter = creatureRepository.getOffspringNumber(); // remove food if above threshold and counter++
+         Integer saturation = session.get(CreatureEntity.class, meetingEntity.getId()).getSaturation();
+         session.flush();
+
+         //then
+         Assertions.assertEquals(toBeCreatedCounter, 1);
+         Assertions.assertEquals(saturation, OFFSPRING_FOOD_THRESHOLD - OFFSPRING_FOOD_TAKEN);
+      }
    }
 
    @Test
    void testPrioritizationCalculation() {
-      List<Creature> prioritized = creatureDAO.getPrioritized();
+      try (Session session = HibernateUtil.getSession()) {
+         //given
+         Creature lessPriorityCreature = dataCreationService.getRandomCreature().withAge(100);
+         CreatureEntity lessEntity = creatureEntityMapper.mapToEntity(lessPriorityCreature);
+         Creature priorityCreature = dataCreationService.getRandomCreature().withAge(1);
+         CreatureEntity entity = creatureEntityMapper.mapToEntity(priorityCreature);
+         session.persist(lessEntity);
+         session.persist(entity);
+         session.flush();
+         //when
+         List<Creature> prioritized = creatureRepository.getPrioritized(1);
+         session.flush();
+
+         //then
+         Assertions.assertEquals(prioritized.size(), 1);
+         Assertions.assertEquals(creatureEntityMapper.mapFromEntity(entity), prioritized.getFirst());
+      }
    }
 
-   @Test
-   void testFoodAssigment() {
-      creatureDAO.createFood(prioritized); // add piece of food to prioritized
-   }
 
    @Test
    void testHungryEating() {
-      creatureDAO.eatIfHungry(); // remove food, recalculate saturation
-      creatureDAO.addFoodPoisoningDebuff(); // random
+      saturationRepository.eatIfHungry(); // remove food, recalculate saturation
+      saturationRepository.addFoodPoisoningDebuff(); // random
    }
 
    @Test
    void testStarvation() {
-      creatureDAO.killStarving(); // if saturation <= 0 and starving -> kill
-      creatureDAO.addStarvationDebuff(); // one chance to survive starving kill
+      saturationRepository.killStarving(); // if saturation <= 0 and starving -> kill
+      saturationRepository.addStarvationDebuff(); // one chance to survive starving kill
    }
 
    @Test
    void testAdvanceAge() {
-      creatureDAO.advanceSaturation();
-      creatureDAO.advanceAge(); // move age by one
-      creatureDAO.assignAgeDebuff(); // random
+      ageRepository.advanceSaturation();
+      ageRepository.advanceAge(); // move age by one
+      ageRepository.assignAgeDebuff(); // random
    }
-
 
 
 }

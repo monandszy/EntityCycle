@@ -8,7 +8,7 @@ import org.mapstruct.ReportingPolicy;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CreatureEntityMapper {
 
-   Creature mapToEntity(CreatureEntity creatureEntity);
+   Creature mapFromEntity(CreatureEntity creatureEntity);
 
-   CreatureEntity mapFromEntity(Creature creature);
+   CreatureEntity mapToEntity(Creature creature);
 }
