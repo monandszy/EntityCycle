@@ -5,7 +5,6 @@ import code.infrastructure.database.entity.CreatureEntity;
 import code.infrastructure.database.entity.DeadCreatureEntity;
 import code.infrastructure.database.entity.DebuffEntity;
 import code.infrastructure.database.entity.FoodEntity;
-import code.infrastructure.database.entity.InjuryEntity;
 import lombok.SneakyThrows;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -13,11 +12,9 @@ import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.hibernate.cfg.Environment;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
-import javax.imageio.spi.ServiceRegistry;
 import java.util.Map;
 import java.util.Objects;
 
@@ -66,7 +63,6 @@ public class HibernateUtil {
                  .addAnnotatedClass(DeadCreatureEntity.class)
                  .addAnnotatedClass(DebuffEntity.class)
                  .addAnnotatedClass(FoodEntity.class)
-                 .addAnnotatedClass(InjuryEntity.class)
                  .getMetadataBuilder()
                  .build();
          return metadata.buildSessionFactory();

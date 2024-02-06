@@ -1,7 +1,6 @@
 package code.infrastructure.database.repository;
 
 import code.business.dao.CreatureDAO;
-import code.business.domain.Creature;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
 

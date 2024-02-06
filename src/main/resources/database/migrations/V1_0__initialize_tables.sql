@@ -17,7 +17,6 @@ CREATE TABLE entity_cycle.creature
     birth_cycle INT    NOT NULL,
     address_id  INT    NOT NULL,
     PRIMARY KEY (creature_id),
-    UNIQUE (address_id),
     CONSTRAINT creature_address FOREIGN KEY (address_id)
         REFERENCES entity_cycle.address (address_id)
 );
@@ -37,7 +36,14 @@ CREATE TABLE entity_cycle.debuff
 (
     debuff_id   SERIAL NOT NULL,
     description TEXT   NOT NULL,
-    value       INT    NOT NULL,
+    value       TEXT   NOT NULL,
+    CONSTRAINT value_in CHECK (
+        value IN
+        (
+         'debuff1',
+         'debuff2',
+         'debuff3'
+            )),
     PRIMARY KEY (debuff_id)
 );
 
@@ -60,6 +66,7 @@ CREATE TABLE entity_cycle.food
     description       TEXT   NOT NULL,
     creature_id       INT    NOT NULL,
     PRIMARY KEY (food_id),
+    UNIQUE (creature_id),
     CONSTRAINT fk_food_creature FOREIGN KEY (food_id)
         REFERENCES entity_cycle.creature (creature_id)
 );

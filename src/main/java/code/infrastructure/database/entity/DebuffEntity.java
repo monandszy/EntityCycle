@@ -2,9 +2,12 @@ package code.infrastructure.database.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,12 +17,14 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.Set;
+
 @Entity
 @Builder
 @Getter
 @Setter
-@ToString
-@EqualsAndHashCode
+@ToString(exclude = "creatures")
+@EqualsAndHashCode(exclude = "creatures")
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "debuff", schema = "entity_cycle")
@@ -32,6 +37,10 @@ public class DebuffEntity {
    @Column(name = "description")
    private String description;
 
+   @Enumerated(EnumType.STRING)
    @Column(name = "value")
-   private Integer value;
+   private DebuffType type;
+
+   @ManyToMany(mappedBy = "debuffs")
+   private Set<CreatureEntity> creatures;
 }
