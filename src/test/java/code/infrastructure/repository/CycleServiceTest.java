@@ -2,9 +2,7 @@ package code.infrastructure.repository;
 
 import code.business.domain.Creature;
 import code.infrastructure.configuration.TestApplicationConfiguration;
-import code.infrastructure.database.repository.AddressRepository;
 import lombok.AllArgsConstructor;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -19,7 +17,7 @@ import java.util.List;
 @Testcontainers
 @SpringJUnitConfig(value = {TestApplicationConfiguration.class})
 @AllArgsConstructor(onConstructor = @__(@Autowired))
-public class CycleServiceTest {
+class CycleServiceTest {
 
    @Container
    static PostgreSQLContainer<?> postgreSQL = new PostgreSQLContainer<>("postgres:16.1");
@@ -31,39 +29,44 @@ public class CycleServiceTest {
       registry.add("jakarta.persistence.jdbc.password", postgreSQL::getPassword);
    }
 
-   @BeforeEach
-   void cleanDatabase() {
-
+   @Test
+   void testGetOffspringNumber() {
+      Integer toBeCreatedCounter = creatureDAO.getOffspringNumber(); // remove 3 food if above threshold
    }
 
    @Test
-   public void createCreatures() {
-
+   void testCreateCreatures() {
+      List<Creature> creatures = dataCreationService.getRandomCreatureList(toBeCreatedCounter);
+      creatureDAO.addAll(creatures);
    }
 
    @Test
-   public void calculatePriority() {
-
+   void testPrioritizationCalculation() {
+      List<Creature> prioritized = creatureDAO.getPrioritized();
    }
 
    @Test
-   public void assignFood(List<Creature> chosen) {
-
+   void testFoodAssigment() {
+      creatureDAO.createFood(prioritized); // add piece of food to prioritized
    }
 
    @Test
-   public void calculateSaturation() {
-
+   void testHungryEating() {
+      creatureDAO.eatIfHungry(); // remove food, recalculate saturation
+      creatureDAO.addFoodPoisoningDebuff(); // random
    }
 
    @Test
-   public void advanceAge() {
-
+   void testStarvation() {
+      creatureDAO.killStarving(); // if saturation <= 0 and starving -> kill
+      creatureDAO.addStarvationDebuff(); // one chance to survive starving kill
    }
 
    @Test
-   public void assignDebuffs() {
-
+   void testAdvanceAge() {
+      creatureDAO.advanceSaturation();
+      creatureDAO.advanceAge(); // move age by one
+      creatureDAO.assignAgeDebuff(); // random
    }
 
 

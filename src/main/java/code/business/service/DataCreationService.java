@@ -1,6 +1,5 @@
 package code.business.service;
 
-import code.business.dao.AddressDAO;
 import code.business.domain.Address;
 import code.business.domain.Creature;
 import lombok.AllArgsConstructor;
