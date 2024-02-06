@@ -1,4 +1,6 @@
 package code.business.dao;
 
-public interface InjuryDAO {
+import code.business.domain.Injury;
+
+public interface InjuryDAO extends DAO<Injury> {
 }

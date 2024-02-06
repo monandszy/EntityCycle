@@ -1,4 +1,6 @@
 package code.business.dao;
 
-public interface DebuffDAO {
+import code.business.domain.Debuff;
+
+public interface DebuffDAO extends DAO<Debuff>{
 }

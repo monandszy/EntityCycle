@@ -14,6 +14,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.time.OffsetDateTime;
+
 @Entity
 @Builder
 @Getter
@@ -31,6 +33,9 @@ public class DeadCreatureEntity {
 
    @Column(name = "cycles_lived")
    private Integer cyclesLived;
+
+   @Column(name = "time_lived")
+   private OffsetDateTime timeLived;
 
    @Column(name = "name")
    private String name;

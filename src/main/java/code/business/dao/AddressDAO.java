@@ -1,4 +1,6 @@
 package code.business.dao;
 
-public interface AddressDAO {
+import code.business.domain.Address;
+
+public interface AddressDAO extends DAO<Address> {
 }

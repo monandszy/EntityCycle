@@ -1,4 +1,6 @@
 package code.business.dao;
 
-public interface CreatureDAO {
+import code.business.domain.Creature;
+
+public interface CreatureDAO extends DAO<Creature> {
 }

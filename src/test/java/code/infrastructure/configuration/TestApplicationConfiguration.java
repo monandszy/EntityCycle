@@ -19,7 +19,7 @@ import java.util.TimeZone;
 
 @Configuration
 @ComponentScan(basePackageClasses = {_ComponentScanMarker.class})
-@PropertySource(value = "classpath:database.properties")
+@PropertySource(value = "classpath:hibernate.properties")
 public class TestApplicationConfiguration {
 
    private Environment env;

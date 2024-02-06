@@ -12,7 +12,6 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
 import java.util.Objects;
@@ -20,7 +19,7 @@ import java.util.TimeZone;
 
 @Configuration
 @ComponentScan(basePackageClasses = {_ComponentScanMarker.class})
-@PropertySource(value = "classpath:database.properties")
+@PropertySource(value = "classpath:hibernate.properties")
 public class ApplicationConfiguration {
 
    private Environment env;

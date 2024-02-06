@@ -1,4 +1,6 @@
 package code.business.dao;
 
-public interface FoodDAO {
+import code.business.domain.Food;
+
+public interface FoodDAO extends DAO<Food>{
 }
