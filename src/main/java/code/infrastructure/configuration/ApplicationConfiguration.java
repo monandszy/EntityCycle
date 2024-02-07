@@ -17,11 +17,11 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
 import java.util.Objects;
@@ -81,6 +81,7 @@ public class ApplicationConfiguration {
 
       return new HikariDataSource(hikariConfig);
    }
+
    @Bean
    public PlatformTransactionManager txManager(final EntityManagerFactory entityManagerFactory) {
       final JpaTransactionManager transactionManager = new JpaTransactionManager();

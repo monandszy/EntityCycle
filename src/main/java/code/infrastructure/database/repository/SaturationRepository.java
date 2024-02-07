@@ -1,9 +1,7 @@
 package code.infrastructure.database.repository;
 
 import code.business.dao.SaturationDAO;
-import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Repository;
 
 @Component
 public class SaturationRepository implements SaturationDAO {

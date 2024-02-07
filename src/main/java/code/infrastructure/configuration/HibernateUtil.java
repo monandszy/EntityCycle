@@ -1,8 +1,8 @@
 package code.infrastructure.configuration;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.PersistenceUnit;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
@@ -11,15 +11,11 @@ import java.util.Objects;
 public class HibernateUtil {
 
    @PersistenceUnit()
-   private EntityManagerFactory entityManagerFactory;
+   private SessionFactory sessionFactory;
 
-   public void closeSessionFactory() {
-         entityManagerFactory.close();
-   }
-
-   public EntityManager getEntityManager() {
-      Objects.requireNonNull(entityManagerFactory);
-      EntityManager session = entityManagerFactory.createEntityManager();
+   public Session getSession() {
+      Objects.requireNonNull(sessionFactory);
+      Session session = sessionFactory.openSession();
       Objects.requireNonNull(session);
       return session;
    }

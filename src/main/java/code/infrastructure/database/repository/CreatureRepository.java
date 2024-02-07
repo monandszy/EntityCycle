@@ -5,13 +5,10 @@ import code.business.domain.Creature;
 import code.infrastructure.configuration.HibernateUtil;
 import code.infrastructure.database.entity.CreatureEntity;
 import code.infrastructure.database.mapper.CreatureEntityMapper;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.NamedQuery;
-import jakarta.persistence.Query;
 import lombok.AllArgsConstructor;
-import org.hibernate.query.NativeQuery;
+import org.hibernate.Session;
+import org.hibernate.query.Query;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
@@ -28,35 +25,35 @@ public class CreatureRepository implements CreatureDAO {
 
    @Override
    public Integer getOffspringNumber() {
-      try (EntityManager entityManager = hibernateUtil.getEntityManager()) {
-         entityManager.getTransaction().begin();
+      try (Session session = hibernateUtil.getSession()) {
+         session.beginTransaction();
          String hql = "SELECT cr FROM CreatureEntity cr WHERE cr.saturation >= :threshold"; // somehow not
          String sql = "SELECT * From entity_cycle.creature as cr WHERE cr.saturation >= 1"; // works
-         Query query = entityManager.createQuery(hql, CreatureEntity.class);
+         Query<CreatureEntity> query = session.createQuery(hql, CreatureEntity.class);
          query.setParameter("threshold", OFFSPRING_FOOD_THRESHOLD);
          List<CreatureEntity> resultList = query.getResultList();
          resultList.forEach(c -> c.setSaturation(c.getSaturation() - OFFSPRING_FOOD_TAKEN));
-         resultList.forEach(entityManager::merge);
+         resultList.forEach(session::merge);
          resultList.forEach(System.out::println);
-         entityManager.getTransaction().commit();
+         session.getTransaction().commit();
          return resultList.size();
       }
    }
 
    @Override
    public void addAll(List<Creature> creatures) {
-      try (EntityManager entityManager = hibernateUtil.getEntityManager()) {
-         entityManager.getTransaction().begin();
-         creatures.stream().map(creatureEntityMapper::mapToEntity).forEach(entityManager::persist);
-         entityManager.getTransaction().commit();
+      try (Session session = hibernateUtil.getSession()) {
+         session.beginTransaction();
+         creatures.stream().map(creatureEntityMapper::mapToEntity).forEach(session::persist);
+         session.getTransaction().commit();
       }
    }
 
    @Override
    public List<Creature> getPrioritized(int limit) {
       List<CreatureEntity> result;
-      try (EntityManager entityManager = hibernateUtil.getEntityManager()) {
-         entityManager.getTransaction().begin();
+      try (Session session = hibernateUtil.getSession()) {
+         session.beginTransaction();
          String sql = """
                   SELECT cr.creature_id, cr.age,  cr.name, cr.saturation, cr.birth_cycle, cr.address_id, (-(age) + saturation - (
                  SELECT COALESCE(SUM(de.saturation_drain),0)
@@ -68,10 +65,10 @@ public class CreatureRepository implements CreatureDAO {
                   ORDER BY priority DESC
                   LIMIT :limit
                   """;
-         Query query = entityManager.createNativeQuery(sql, CreatureEntity.class);
+         Query<CreatureEntity> query = session.createNativeQuery(sql, CreatureEntity.class);
          query.setParameter("limit", limit);
          result = query.getResultList();
-         entityManager.getTransaction().commit();
+         session.getTransaction().commit();
       }
       return result.stream().map(creatureEntityMapper::mapFromEntity).toList();
    }
@@ -79,19 +76,19 @@ public class CreatureRepository implements CreatureDAO {
    @Override
    public void updateFood(List<Creature> prioritized) {
       List<CreatureEntity> list = prioritized.stream().map(creatureEntityMapper::mapToEntity).toList();
-      try (EntityManager entityManager = hibernateUtil.getEntityManager()) {
-         entityManager.getTransaction().begin();
-         list.forEach(entityManager::merge);
-         entityManager.getTransaction().commit();
+      try (Session session = hibernateUtil.getSession()) {
+         session.beginTransaction();
+         list.forEach(session::merge);
+         session.getTransaction().commit();
       }
    }
 
    public List<Creature> getAll() {
       List<CreatureEntity> result;
-      try (EntityManager entityManager = hibernateUtil.getEntityManager()) {
-         entityManager.getTransaction().begin();
-          result = entityManager.createQuery("FROM CreatureEntity ", CreatureEntity.class).getResultList();
-         entityManager.getTransaction().commit();
+      try (Session session = hibernateUtil.getSession()) {
+         session.beginTransaction();
+          result = session.createQuery("FROM CreatureEntity ", CreatureEntity.class).getResultList();
+         session.getTransaction().commit();
       }
       return result.stream().map(creatureEntityMapper::mapFromEntity).toList();
    }
