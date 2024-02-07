@@ -11,8 +11,10 @@ import code.infrastructure.database.repository.CreatureRepository;
 import code.infrastructure.database.repository.SaturationRepository;
 import lombok.AllArgsConstructor;
 import org.hibernate.Session;
+import org.hibernate.cfg.Environment;
 import org.hibernate.query.NativeQuery;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +26,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.List;
+import java.util.Map;
 
 import static code.infrastructure.database.repository.CreatureRepository.OFFSPRING_FOOD_TAKEN;
 import static code.infrastructure.database.repository.CreatureRepository.OFFSPRING_FOOD_THRESHOLD;
@@ -41,6 +44,11 @@ class CycleServiceTest {
       registry.add("jakarta.persistence.jdbc.url", postgreSQL::getJdbcUrl);
       registry.add("jakarta.persistence.jdbc.user", postgreSQL::getUsername);
       registry.add("jakarta.persistence.jdbc.password", postgreSQL::getPassword);
+      HIBERNATE_OVERRIDE = Map.ofEntries(
+              Map.entry(Environment.URL, postgreSQL.getJdbcUrl()),
+              Map.entry(Environment.USER, postgreSQL.getUsername()),
+              Map.entry(Environment.PASS, postgreSQL.getPassword())
+      );
    }
 
    private final CreatureRepository creatureRepository;
@@ -49,7 +57,18 @@ class CycleServiceTest {
    private final DataCreationService dataCreationService;
    private final CreatureEntityMapper creatureEntityMapper;
 
+   private static Map<String, Object> HIBERNATE_OVERRIDE;
 
+   @BeforeAll
+   static void overrideHibernate() {
+      System.out.printf("aaaaa \n\n\n\n");
+      new HibernateUtil().loadTestSessionFactory(HIBERNATE_OVERRIDE);
+   }
+
+   @Test
+   void test() {
+
+   }
 
    @BeforeEach
    void deleteAll() {
@@ -67,8 +86,6 @@ class CycleServiceTest {
          session.getTransaction().commit();
       }
    }
-
-
 
    @Test
    void testGetOffspringNumber() {

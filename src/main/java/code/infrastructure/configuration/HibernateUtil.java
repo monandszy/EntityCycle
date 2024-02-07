@@ -5,7 +5,7 @@ import code.infrastructure.database.entity.CreatureEntity;
 import code.infrastructure.database.entity.DeadCreatureEntity;
 import code.infrastructure.database.entity.DebuffEntity;
 import code.infrastructure.database.entity.FoodEntity;
-import lombok.SneakyThrows;
+import lombok.NoArgsConstructor;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
@@ -19,17 +19,20 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
 
 @Component
-@PropertySource(value = "classpath:database.properties")
+@NoArgsConstructor
+@PropertySource(value = "classpath:data.properties")
 public class HibernateUtil {
 
-   private final org.springframework.core.env.Environment env;
+   // cannot be static...
+   private org.springframework.core.env.Environment env;
 
-   private final Map<String, Object> HIBERNATE_SETTINGS = Map.ofEntries(
+   private final Map<String, Object> HIBERNATE_SETTINGS = new HashMap<>(Map.ofEntries(
            Map.entry(Environment.DRIVER, "org.postgresql.Driver"),
            Map.entry(Environment.URL, "jdbc:postgresql://localhost:5432/java_model"),
            Map.entry(Environment.USER, "postgres"),
@@ -40,16 +43,16 @@ public class HibernateUtil {
            Map.entry(Environment.CONNECTION_PROVIDER, "org.hibernate.hikaricp.internal.HikariCPConnectionProvider"),
            Map.entry(Environment.SHOW_SQL, true),
            Map.entry(Environment.FORMAT_SQL, false),
-           Map.entry(Environment.USE_SQL_COMMENTS, false)
+           Map.entry(Environment.USE_SQL_COMMENTS, false))
    );
 
-   private final Map<String, Object> HIKARI_CP_SETTING = Map.ofEntries(
-           Map.entry(Environment.JAKARTA_JDBC_DRIVER, "org.postgresql.Driver"),
-           Map.entry("hibernate.hikari.connectionTimeout", "20000"),
-           Map.entry("hibernate.hikari.minimumIdle", "10"),
-           Map.entry("hibernate.hikari.maximumPoolSize", "20"),
-           Map.entry("hibernate.hikari.idleTimeout", "300000")
-   );
+//   private final Map<String, Object> HIKARI_CP_SETTING = Map.ofEntries(
+//           Map.entry(Environment.JAKARTA_JDBC_DRIVER, "org.postgresql.Driver"),
+//           Map.entry("hibernate.hikari.connectionTimeout", "20000"),
+//           Map.entry("hibernate.hikari.minimumIdle", "10"),
+//           Map.entry("hibernate.hikari.maximumPoolSize", "20"),
+//           Map.entry("hibernate.hikari.idleTimeout", "300000")
+//   );
 
    private final Map<String, Object> CACHE_SETTINGS = Map.ofEntries(
            Map.entry(Environment.CACHE_REGION_FACTORY, "jcache"),
@@ -64,8 +67,27 @@ public class HibernateUtil {
    @Autowired
    public HibernateUtil(org.springframework.core.env.Environment env) {
       this.env = env;
+   }
+
+   public void loadTestSessionFactory(Map<String, Object> HIBERNATE_SETTINGS_OVERRIDE) {
       if (sessionFactory == null) {
-         sessionFactory = loadSessionFactory();
+         initializeParameterSource();
+      }
+      System.out.println(HIBERNATE_SETTINGS);
+      HIBERNATE_SETTINGS.putAll(HIBERNATE_SETTINGS_OVERRIDE);
+      System.out.println(HIBERNATE_SETTINGS);
+      try {
+         ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
+                 .applySettings(HIBERNATE_SETTINGS)
+//                 .applySettings(HIKARI_CP_SETTING)
+                 .applySettings(CACHE_SETTINGS)
+                 .build();
+
+         Metadata metadata = getMetadata(serviceRegistry);
+
+         sessionFactory = metadata.getSessionFactoryBuilder().build();
+      } catch (Throwable ex) {
+         throw new ExceptionInInitializerError(ex);
       }
    }
 
@@ -73,18 +95,11 @@ public class HibernateUtil {
       try {
          ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
                  .applySettings(HIBERNATE_SETTINGS)
-                 .applySettings(HIKARI_CP_SETTING)
+//                 .applySettings(HIKARI_CP_SETTING)
                  .applySettings(CACHE_SETTINGS)
                  .build();
 
-         Metadata metadata = new MetadataSources(serviceRegistry)
-                 .addAnnotatedClass(AddressEntity.class)
-                 .addAnnotatedClass(CreatureEntity.class)
-                 .addAnnotatedClass(DeadCreatureEntity.class)
-                 .addAnnotatedClass(DebuffEntity.class)
-                 .addAnnotatedClass(FoodEntity.class)
-                 .getMetadataBuilder()
-                 .build();
+         Metadata metadata = getMetadata(serviceRegistry);
 
          return metadata.getSessionFactoryBuilder().build();
       } catch (Throwable ex) {
@@ -92,15 +107,29 @@ public class HibernateUtil {
       }
    }
 
-   @SneakyThrows
+   private static HibernateUtil initializeParameterSource() {
+      ApplicationContext context = new AnnotationConfigApplicationContext(ApplicationConfiguration.class);
+      return context.getBean(HibernateUtil.class);
+   }
+
+   private static Metadata getMetadata(ServiceRegistry serviceRegistry) {
+      return new MetadataSources(serviceRegistry)
+              .addAnnotatedClass(AddressEntity.class)
+              .addAnnotatedClass(CreatureEntity.class)
+              .addAnnotatedClass(DeadCreatureEntity.class)
+              .addAnnotatedClass(DebuffEntity.class)
+              .addAnnotatedClass(FoodEntity.class)
+              .getMetadataBuilder()
+              .build();
+   }
+
    public static void closeSessionFactory() {
          sessionFactory.close();
    }
 
    public static Session getSession() {
       if (sessionFactory == null) {
-         ApplicationContext context = new AnnotationConfigApplicationContext(ApplicationConfiguration.class);
-         context.getBean(HibernateUtil.class);
+         sessionFactory = initializeParameterSource().loadSessionFactory();
       }
       Objects.requireNonNull(sessionFactory);
       Session session = sessionFactory.openSession();
