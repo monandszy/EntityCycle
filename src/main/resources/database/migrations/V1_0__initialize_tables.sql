@@ -36,16 +36,15 @@ CREATE TABLE entity_cycle.debuff
 (
     debuff_id   SERIAL NOT NULL,
     description TEXT   NOT NULL,
-    value       TEXT   NOT NULL,
     saturation_drain INT NOT NULL
     CONSTRAINT value_in CHECK (
-        value IN
+        description IN
         (
          'poisoning',
          'starvation',
          'fracture'
             )),
-    UNIQUE (value),
+    UNIQUE (description),
     PRIMARY KEY (debuff_id)
 );
 

@@ -25,8 +25,8 @@ import java.util.Set;
 @Builder
 @Getter
 @Setter
-@ToString(exclude = "creatures")
-@EqualsAndHashCode(exclude = "creatures")
+@ToString(exclude = {"creatures", "timeCreated"})
+@EqualsAndHashCode(exclude = {"creatures", "timeCreated"})
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "address", schema = "entity_cycle")

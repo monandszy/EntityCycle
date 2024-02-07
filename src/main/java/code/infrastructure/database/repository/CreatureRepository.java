@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+
 @Repository
 @AllArgsConstructor
 public class CreatureRepository implements CreatureDAO {
@@ -25,13 +26,14 @@ public class CreatureRepository implements CreatureDAO {
    public Integer getOffspringNumber() {
       try (Session session = HibernateUtil.getSession()) {
          session.beginTransaction();
-         String hql = "SELECT cr FROM CreatureEntity cr WHERE cr.saturation >= :threshold";
+         String hql = "SELECT cr FROM CreatureEntity cr WHERE cr.saturation >= :threshold"; // somehow not
+         String sql = "SELECT * From entity_cycle.creature as cr WHERE cr.saturation >= 1"; // works
          Query<CreatureEntity> query = session.createQuery(hql, CreatureEntity.class);
          query.setParameter("threshold", OFFSPRING_FOOD_THRESHOLD);
          List<CreatureEntity> resultList = query.getResultList();
-         resultList.stream()
-                 .peek(c -> c.setSaturation(c.getSaturation() - OFFSPRING_FOOD_TAKEN))
-                 .forEach(session::persist);
+         resultList.forEach(c -> c.setSaturation(c.getSaturation() - OFFSPRING_FOOD_TAKEN));
+         resultList.forEach(session::update);
+         resultList.forEach(System.out::println);
          session.getTransaction().commit();
          return resultList.size();
       }
@@ -48,25 +50,26 @@ public class CreatureRepository implements CreatureDAO {
 
    @Override
    public List<Creature> getPrioritized(int limit) {
+      List<CreatureEntity> result;
       try (Session session = HibernateUtil.getSession()) {
          session.beginTransaction();
-         String sql = "SELECT (cr.creature_id, cr.age,  cr.name, cr.saturation, cr.birth_cycle) " +
-                 "FROM entity_cycle.creature as cr " +
-                 "INNER JOIN entity_cycle.injury i ON cr.creature_id = i.creature_id " +
-                 "INNER JOIN entity_cycle.debuff db ON db.debuff_id = i.debuff_id " +
-                 "GROUP BY (cr.creature_id, cr.age,  cr.name, cr.saturation, cr.birth_cycle)" +
-                 "ORDER BY -age + saturation - sum(db.saturation_drain) LIMIT :limit";
-//         String sql = "SELECT (cr.creature_id, cr.age,  cr.name, cr.saturation, cr.birth_cycle) " +
-//                 "FROM entity_cycle.injury AS i " +
-//                 "INNER JOIN entity_cycle.creature cr ON i.creature_id = cr.creature_id " +
-//                 "INNER JOIN entity_cycle.debuff db ON i.debuff_id = db.debuff_id " +
-//                 "ORDER BY -cr.age + cr.saturation - SUM(db.saturation_drain) LIMIT :limit";
+         String sql = """
+                  SELECT cr.creature_id, cr.age,  cr.name, cr.saturation, cr.birth_cycle, cr.address_id, (-(age) + saturation - (
+                 SELECT COALESCE(SUM(de.saturation_drain),0)
+                    FROM entity_cycle.injury AS i
+                    INNER JOIN entity_cycle.debuff AS de ON i.debuff_id = de.debuff_id
+                    WHERE i.creature_id = cr.creature_id
+                  )) AS priority
+                  FROM entity_cycle.creature AS cr
+                  ORDER BY priority DESC
+                  LIMIT :limit
+                  """;
          Query<CreatureEntity> query = session.createNativeQuery(sql, CreatureEntity.class);
          query.setParameter("limit", limit);
-         List<CreatureEntity> list = query.list();
+         result = query.getResultList();
          session.getTransaction().commit();
-         return list.stream().map(creatureEntityMapper::mapFromEntity).toList();
       }
+      return result.stream().map(creatureEntityMapper::mapFromEntity).toList();
    }
 
    @Override
@@ -77,5 +80,15 @@ public class CreatureRepository implements CreatureDAO {
          list.forEach(session::merge);
          session.getTransaction().commit();
       }
+   }
+
+   public List<Creature> getAll() {
+      List<CreatureEntity> result;
+      try (Session session = HibernateUtil.getSession()) {
+         session.beginTransaction();
+          result = session.createQuery("FROM CreatureEntity ", CreatureEntity.class).getResultList();
+         session.getTransaction().commit();
+      }
+      return result.stream().map(creatureEntityMapper::mapFromEntity).toList();
    }
 }

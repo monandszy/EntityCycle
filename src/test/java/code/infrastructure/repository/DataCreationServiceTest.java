@@ -30,7 +30,7 @@ public class DataCreationServiceTest {
    private final DataCreationService dataCreationService;
    private final CreatureRepository creatureRepository;
    private final CreatureEntityMapper creatureEntityMapper;
-   private final HibernateUtil hibernateUtil; // don't use
+
    @Container
    static PostgreSQLContainer<?> postgreSQL = new PostgreSQLContainer<>("postgres:16.1");
 

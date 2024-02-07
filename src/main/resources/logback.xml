@@ -18,10 +18,6 @@
         </encoder>
     </appender>
 
-    <logger name="code.service.printing.output.OutputToLog" level="debug" additivity="false">
-        <appender-ref ref="FILE"/>
-    </logger>
-
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
     </root>

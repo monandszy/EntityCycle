@@ -1,4 +1,4 @@
-package code.infrastructure.database.entity;
+package code.business.domain;
 
 public enum DebuffType {
    debuff1,

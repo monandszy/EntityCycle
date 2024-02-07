@@ -53,7 +53,7 @@ public class CreatureEntity {
    @Column(name = "birth_cycle")
    private Integer birthCycle;
 
-   @ManyToOne(fetch = FetchType.LAZY)
+   @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
    @JoinColumn(name = "address_id")
    private AddressEntity address;
 

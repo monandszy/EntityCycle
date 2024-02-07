@@ -7,10 +7,10 @@ import code.business.domain.Food;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 @Service
@@ -53,21 +53,35 @@ public class DataCreationService {
 
    private Address getRandomAddress() {
       if (Math.random() > 0.2) {
-         return Address.builder()
-                 .city(getRandomString(7))
-                 .street(getRandomString(20))
-                 .postalCode(getRandomString(11))
-                 .timeCreated(OffsetDateTime.now())
-                 .build();
+         return getRandomBuilderAddress();
       } else {
-         return addressDAO.getRandomExisitngAddress();
+         Optional<Address> randomExistingAddress = addressDAO.getRandomExistingAddress();
+         if (randomExistingAddress.isEmpty())
+            return getRandomBuilderAddress();
+
+         return randomExistingAddress.orElseThrow();
       }
    }
 
+   private Address getRandomBuilderAddress() {
+      return Address.builder()
+              .city(getRandomString(7))
+              .street(getRandomString(20))
+              .postalCode(getRandomString(11))
+              .timeCreated(OffsetDateTime.now())
+              .build();
+   }
+
+   static int leftLimit = 97; // letter 'a'
+   static int rightLimit = 122; // letter 'z'
+
    public String getRandomString(int length) {
-      byte[] array = new byte[length];
-      new Random().nextBytes(array);
-      return new String(array, StandardCharsets.UTF_8);
+      Random random = new Random();
+      return random.ints(leftLimit, rightLimit + 1)
+              .limit(length)
+              .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+              .toString();
+
    }
 
    public int getRandomNumber(int top) {

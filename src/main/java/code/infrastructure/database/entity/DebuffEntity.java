@@ -1,5 +1,6 @@
 package code.infrastructure.database.entity;
 
+import code.business.domain.DebuffType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

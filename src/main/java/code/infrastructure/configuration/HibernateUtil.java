@@ -1,5 +1,10 @@
 package code.infrastructure.configuration;
 
+import code.infrastructure.database.entity.AddressEntity;
+import code.infrastructure.database.entity.CreatureEntity;
+import code.infrastructure.database.entity.DeadCreatureEntity;
+import code.infrastructure.database.entity.DebuffEntity;
+import code.infrastructure.database.entity.FoodEntity;
 import lombok.SneakyThrows;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -9,6 +14,8 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Environment;
 import org.hibernate.service.ServiceRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
@@ -22,7 +29,7 @@ public class HibernateUtil {
 
    private final org.springframework.core.env.Environment env;
 
-   public final Map<String, Object> HIBERNATE_SETTINGS = Map.ofEntries(
+   private final Map<String, Object> HIBERNATE_SETTINGS = Map.ofEntries(
            Map.entry(Environment.DRIVER, "org.postgresql.Driver"),
            Map.entry(Environment.URL, "jdbc:postgresql://localhost:5432/java_model"),
            Map.entry(Environment.USER, "postgres"),
@@ -32,11 +39,11 @@ public class HibernateUtil {
            Map.entry(Environment.HBM2DDL_AUTO, "none"),
            Map.entry(Environment.CONNECTION_PROVIDER, "org.hibernate.hikaricp.internal.HikariCPConnectionProvider"),
            Map.entry(Environment.SHOW_SQL, true),
-           Map.entry(Environment.FORMAT_SQL, true),
-           Map.entry(Environment.USE_SQL_COMMENTS, true)
+           Map.entry(Environment.FORMAT_SQL, false),
+           Map.entry(Environment.USE_SQL_COMMENTS, false)
    );
 
-   public final Map<String, Object> HIKARI_CP_SETTING = Map.ofEntries(
+   private final Map<String, Object> HIKARI_CP_SETTING = Map.ofEntries(
            Map.entry(Environment.JAKARTA_JDBC_DRIVER, "org.postgresql.Driver"),
            Map.entry("hibernate.hikari.connectionTimeout", "20000"),
            Map.entry("hibernate.hikari.minimumIdle", "10"),
@@ -44,7 +51,7 @@ public class HibernateUtil {
            Map.entry("hibernate.hikari.idleTimeout", "300000")
    );
 
-   public final Map<String, Object> CACHE_SETTINGS = Map.ofEntries(
+   private final Map<String, Object> CACHE_SETTINGS = Map.ofEntries(
            Map.entry(Environment.CACHE_REGION_FACTORY, "jcache"),
            Map.entry("hibernate.javax.cache.provider", "org.ehcache.jsr107.EhcacheCachingProvider"),
            Map.entry("hibernate.javax.cache.uri", "/META-INF/ehcache.xml"),
@@ -71,6 +78,11 @@ public class HibernateUtil {
                  .build();
 
          Metadata metadata = new MetadataSources(serviceRegistry)
+                 .addAnnotatedClass(AddressEntity.class)
+                 .addAnnotatedClass(CreatureEntity.class)
+                 .addAnnotatedClass(DeadCreatureEntity.class)
+                 .addAnnotatedClass(DebuffEntity.class)
+                 .addAnnotatedClass(FoodEntity.class)
                  .getMetadataBuilder()
                  .build();
 
@@ -86,6 +98,10 @@ public class HibernateUtil {
    }
 
    public static Session getSession() {
+      if (sessionFactory == null) {
+         ApplicationContext context = new AnnotationConfigApplicationContext(ApplicationConfiguration.class);
+         context.getBean(HibernateUtil.class);
+      }
       Objects.requireNonNull(sessionFactory);
       Session session = sessionFactory.openSession();
       Objects.requireNonNull(session);

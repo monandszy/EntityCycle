@@ -11,7 +11,9 @@ import code.infrastructure.database.repository.CreatureRepository;
 import code.infrastructure.database.repository.SaturationRepository;
 import lombok.AllArgsConstructor;
 import org.hibernate.Session;
+import org.hibernate.query.NativeQuery;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -46,12 +48,33 @@ class CycleServiceTest {
    private final AgeRepository ageRepository;
    private final DataCreationService dataCreationService;
    private final CreatureEntityMapper creatureEntityMapper;
-   private final HibernateUtil hibernateUtil; // don't use
+
+
+
+   @BeforeEach
+   void deleteAll() {
+      try (Session session = HibernateUtil.getSession()) {
+         session.beginTransaction();
+         NativeQuery nativeQuery = session.createNativeQuery("""
+                 DELETE FROM  entity_cycle.food WHERE 1=1;
+                 DELETE FROM  entity_cycle.injury WHERE 1=1;
+                 DELETE FROM  entity_cycle.creature WHERE 1=1;
+                 DELETE FROM  entity_cycle.debuff WHERE 1=1;
+                 DELETE FROM  entity_cycle.dead_creature WHERE 1=1;
+                 DELETE FROM  entity_cycle.address WHERE 1=1;
+                 """);
+         nativeQuery.executeUpdate();
+         session.getTransaction().commit();
+      }
+   }
+
 
 
    @Test
    void testGetOffspringNumber() {
+      int validId;
       try (Session session = HibernateUtil.getSession()) {
+         session.beginTransaction();
          //given
          Creature meetingCriteriaCreature = dataCreationService.getRandomCreature().withSaturation(OFFSPRING_FOOD_THRESHOLD);
          CreatureEntity meetingEntity = creatureEntityMapper.mapToEntity(meetingCriteriaCreature);
@@ -59,16 +82,20 @@ class CycleServiceTest {
          CreatureEntity notMeetingEntity = creatureEntityMapper.mapToEntity(notMeetingCriteriaCreature);
          session.persist(meetingEntity);
          session.persist(notMeetingEntity);
-         session.flush();
-
+         session.getTransaction().commit();
+         validId = meetingEntity.getId();
+      }
+      // separate because of some cache issue - didn't update
+      try (Session session = HibernateUtil.getSession()) {
          //when
-         Integer toBeCreatedCounter = creatureRepository.getOffspringNumber(); // remove food if above threshold and counter++
-         Integer saturation = session.get(CreatureEntity.class, meetingEntity.getId()).getSaturation();
+         session.beginTransaction();
+         Integer toBeCreatedCounter = creatureRepository.getOffspringNumber();
          session.flush();
-
+         Integer saturation = session.get(CreatureEntity.class, validId).getSaturation();
+         session.getTransaction().commit();
          //then
-         Assertions.assertEquals(toBeCreatedCounter, 1);
-         Assertions.assertEquals(saturation, OFFSPRING_FOOD_THRESHOLD - OFFSPRING_FOOD_TAKEN);
+         Assertions.assertEquals(1, toBeCreatedCounter);
+         Assertions.assertEquals(OFFSPRING_FOOD_THRESHOLD - OFFSPRING_FOOD_TAKEN, saturation);
       }
    }
 
@@ -76,16 +103,18 @@ class CycleServiceTest {
    void testPrioritizationCalculation() {
       try (Session session = HibernateUtil.getSession()) {
          //given
+         session.beginTransaction();
          Creature lessPriorityCreature = dataCreationService.getRandomCreature().withAge(100);
          CreatureEntity lessEntity = creatureEntityMapper.mapToEntity(lessPriorityCreature);
          Creature priorityCreature = dataCreationService.getRandomCreature().withAge(1);
          CreatureEntity entity = creatureEntityMapper.mapToEntity(priorityCreature);
          session.persist(lessEntity);
          session.persist(entity);
-         session.flush();
+         session.getTransaction().commit();
          //when
+         session.beginTransaction();
          List<Creature> prioritized = creatureRepository.getPrioritized(1);
-         session.flush();
+         session.getTransaction().commit();
 
          //then
          Assertions.assertEquals(prioritized.size(), 1);
