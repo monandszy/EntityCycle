@@ -7,8 +7,9 @@ import code.infrastructure.configuration.HibernateUtil;
 import code.infrastructure.database.entity.CreatureEntity;
 import code.infrastructure.database.mapper.CreatureEntityMapper;
 import code.infrastructure.database.repository.CreatureRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 import lombok.AllArgsConstructor;
-import org.hibernate.Session;
 import org.hibernate.query.Query;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,7 @@ public class DataCreationServiceTest {
    private final DataCreationService dataCreationService;
    private final CreatureRepository creatureRepository;
    private final CreatureEntityMapper creatureEntityMapper;
+   private final HibernateUtil hibernateUtil;
 
    @Container
    static PostgreSQLContainer<?> postgreSQL = new PostgreSQLContainer<>("postgres:16.1");
@@ -43,44 +45,44 @@ public class DataCreationServiceTest {
 
    @Test
    void testFoodAssigment() {
-      try (Session session = HibernateUtil.getSession()) {
+      try (EntityManager entityManger = hibernateUtil.getEntityManager()) {
          //given
-         session.beginTransaction();
+         entityManger.getTransaction().begin();
          Creature randomPrioritizedCreature = dataCreationService.getRandomCreature();
          CreatureEntity entity = creatureEntityMapper.mapToEntity(randomPrioritizedCreature);
-         session.persist(entity);
-         session.flush();
+         entityManger.persist(entity);
+         entityManger.flush();
          Creature creature = creatureEntityMapper.mapFromEntity(entity);
 
          //when
          dataCreationService.addFood(List.of(creature));
          creatureRepository.updateFood(List.of(creature));
-         session.flush();
+         entityManger.flush();
 
          // then
          Assertions.assertFalse(creature.getFoods().isEmpty());
          Assertions.assertFalse(entity.getFoods().isEmpty());
-         session.getTransaction().commit();
+         entityManger.getTransaction().commit();
       }
    }
 
    @Test
    void testCreateCreatures() {
-      try (Session session = HibernateUtil.getSession()) {
-         session.beginTransaction();
+      try (EntityManager entityManger = hibernateUtil.getEntityManager()) {
+         entityManger.getTransaction().begin();
          //given
          int CREATURE_NUMBER = 3;
          List<Creature> creatures = dataCreationService.getRandomCreatureList(CREATURE_NUMBER);
 
          //when
          creatureRepository.addAll(creatures);
-         session.flush();
+         entityManger.flush();
 
          //then
-         Query<CreatureEntity> query = session.createQuery("FROM CreatureEntity cr", CreatureEntity.class);
+         TypedQuery<CreatureEntity> query = entityManger.createQuery("FROM CreatureEntity cr", CreatureEntity.class);
          List<CreatureEntity> resultList = query.getResultList();
          Assertions.assertEquals(CREATURE_NUMBER, resultList.size());
-         session.getTransaction().commit();
+         entityManger.getTransaction().commit();
       }
    }
 }

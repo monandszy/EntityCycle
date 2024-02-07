@@ -15,7 +15,5 @@ public class Runner {
          throw new RuntimeException(e);
       }
       ApplicationContext context = new AnnotationConfigApplicationContext(ApplicationConfiguration.class);
-      context.getBean(HibernateUtil.class);
-      HibernateUtil.getSession();
    }
 }

@@ -1,5 +1,3 @@
-CREATE SCHEMA entity_cycle;
-
 CREATE TABLE entity_cycle.address
 (
     address_id   SERIAL      NOT NULL,

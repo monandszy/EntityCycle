@@ -9,9 +9,9 @@ import code.infrastructure.database.mapper.CreatureEntityMapper;
 import code.infrastructure.database.repository.AgeRepository;
 import code.infrastructure.database.repository.CreatureRepository;
 import code.infrastructure.database.repository.SaturationRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 import lombok.AllArgsConstructor;
-import org.hibernate.Session;
-import org.hibernate.cfg.Environment;
 import org.hibernate.query.NativeQuery;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -44,11 +44,6 @@ class CycleServiceTest {
       registry.add("jakarta.persistence.jdbc.url", postgreSQL::getJdbcUrl);
       registry.add("jakarta.persistence.jdbc.user", postgreSQL::getUsername);
       registry.add("jakarta.persistence.jdbc.password", postgreSQL::getPassword);
-      HIBERNATE_OVERRIDE = Map.ofEntries(
-              Map.entry(Environment.URL, postgreSQL.getJdbcUrl()),
-              Map.entry(Environment.USER, postgreSQL.getUsername()),
-              Map.entry(Environment.PASS, postgreSQL.getPassword())
-      );
    }
 
    private final CreatureRepository creatureRepository;
@@ -57,13 +52,7 @@ class CycleServiceTest {
    private final DataCreationService dataCreationService;
    private final CreatureEntityMapper creatureEntityMapper;
 
-   private static Map<String, Object> HIBERNATE_OVERRIDE;
-
-   @BeforeAll
-   static void overrideHibernate() {
-      System.out.printf("aaaaa \n\n\n\n");
-      new HibernateUtil().loadTestSessionFactory(HIBERNATE_OVERRIDE);
-   }
+   private final HibernateUtil hibernateUtil;
 
    @Test
    void test() {
@@ -72,9 +61,9 @@ class CycleServiceTest {
 
    @BeforeEach
    void deleteAll() {
-      try (Session session = HibernateUtil.getSession()) {
-         session.beginTransaction();
-         NativeQuery nativeQuery = session.createNativeQuery("""
+      try (EntityManager session = hibernateUtil.getEntityManager()) {
+         session.getTransaction().begin();
+         Query nativeQuery = session.createNativeQuery("""
                  DELETE FROM  entity_cycle.food WHERE 1=1;
                  DELETE FROM  entity_cycle.injury WHERE 1=1;
                  DELETE FROM  entity_cycle.creature WHERE 1=1;
@@ -90,8 +79,8 @@ class CycleServiceTest {
    @Test
    void testGetOffspringNumber() {
       int validId;
-      try (Session session = HibernateUtil.getSession()) {
-         session.beginTransaction();
+      try (EntityManager session = hibernateUtil.getEntityManager()) {
+         session.getTransaction().begin();
          //given
          Creature meetingCriteriaCreature = dataCreationService.getRandomCreature().withSaturation(OFFSPRING_FOOD_THRESHOLD);
          CreatureEntity meetingEntity = creatureEntityMapper.mapToEntity(meetingCriteriaCreature);
@@ -103,12 +92,12 @@ class CycleServiceTest {
          validId = meetingEntity.getId();
       }
       // separate because of some cache issue - didn't update
-      try (Session session = HibernateUtil.getSession()) {
+      try (EntityManager session = hibernateUtil.getEntityManager()) {
          //when
-         session.beginTransaction();
+         session.getTransaction().begin();
          Integer toBeCreatedCounter = creatureRepository.getOffspringNumber();
          session.flush();
-         Integer saturation = session.get(CreatureEntity.class, validId).getSaturation();
+         Integer saturation = session.find(CreatureEntity.class, validId).getSaturation();
          session.getTransaction().commit();
          //then
          Assertions.assertEquals(1, toBeCreatedCounter);
@@ -118,9 +107,9 @@ class CycleServiceTest {
 
    @Test
    void testPrioritizationCalculation() {
-      try (Session session = HibernateUtil.getSession()) {
+      try (EntityManager session = hibernateUtil.getEntityManager()) {
          //given
-         session.beginTransaction();
+         session.getTransaction().begin();
          Creature lessPriorityCreature = dataCreationService.getRandomCreature().withAge(100);
          CreatureEntity lessEntity = creatureEntityMapper.mapToEntity(lessPriorityCreature);
          Creature priorityCreature = dataCreationService.getRandomCreature().withAge(1);
@@ -129,7 +118,7 @@ class CycleServiceTest {
          session.persist(entity);
          session.getTransaction().commit();
          //when
-         session.beginTransaction();
+         session.getTransaction().begin();
          List<Creature> prioritized = creatureRepository.getPrioritized(1);
          session.getTransaction().commit();
 
