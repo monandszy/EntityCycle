@@ -1,6 +1,7 @@
 package code.business.dao;
 
 import code.business.domain.Creature;
+import code.business.domain.Debuff;
 
 import java.util.List;
 
@@ -11,5 +12,5 @@ public interface SaturationDAO {
 
    void killStarving();
 
-   void addStarvationDebuff();
+   void addStarvationDebuff(Debuff starvationDebuff);
 }

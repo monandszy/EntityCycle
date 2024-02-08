@@ -2,6 +2,7 @@ package code.infrastructure.database.repository;
 
 import code.business.dao.SaturationDAO;
 import code.business.domain.Creature;
+import code.business.domain.Debuff;
 import code.business.domain.DebuffType;
 import code.infrastructure.configuration.HibernateUtil;
 import code.infrastructure.database.entity.CreatureEntity;
@@ -10,7 +11,8 @@ import code.infrastructure.database.entity.FoodEntity;
 import code.infrastructure.database.mapper.CreatureEntityMapper;
 import code.infrastructure.database.mapper.DebuffEntityMapper;
 import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaUpdate;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.ParameterExpression;
 import jakarta.persistence.criteria.Root;
 import lombok.AllArgsConstructor;
@@ -38,11 +40,11 @@ public class SaturationRepository implements SaturationDAO {
    public List<Creature> eatIfHungry() {
       try (Session session = hibernateUtil.getSession()) {
          session.beginTransaction();
-         String hql = "SELECT cr FROM CreatureEntity cr INNER JOIN FETCH cr.foods WHERE cr.saturation < :threshold AND (size(cr.foods) != 0)";
+         String hql = "SELECT cr FROM CreatureEntity cr INNER JOIN FETCH cr.foods " +
+                 "WHERE cr.saturation < :threshold AND (size(cr.foods) != 0)";
          Query<CreatureEntity> query = session.createQuery(hql, CreatureEntity.class);
          query.setParameter("threshold", OFFSPRING_FOOD_THRESHOLD);
          List<CreatureEntity> resultList = query.getResultList();
-         System.out.println(resultList);
          resultList.forEach(e -> {
             FoodEntity foodEntity = e.getFoods().stream().findAny().orElseThrow();
             Integer nutritionalValue = foodEntity.getNutritionalValue();
@@ -94,11 +96,42 @@ public class SaturationRepository implements SaturationDAO {
 
    @Override
    public void killStarving() {
+      try (Session session = hibernateUtil.getSession()) {
+         session.beginTransaction();
+         CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+         CriteriaQuery<CreatureEntity> criteriaQuery = criteriaBuilder.createQuery(CreatureEntity.class);
+         Root<CreatureEntity> root = criteriaQuery.from(CreatureEntity.class);
+         Join<Object, Object> joinTable = root.join("debuffs");
+         ParameterExpression<DebuffType> typeParam = criteriaBuilder.parameter(DebuffType.class);
+         criteriaQuery.select(root).where(
+                 criteriaBuilder.equal(joinTable.get("value"), typeParam),
+                 criteriaBuilder.lt(root.get("saturation"), 1)
+         );
 
+         Query<CreatureEntity> query = session.createQuery(criteriaQuery);
+         query.setParameter(typeParam, DebuffType.starvation);
+
+//         String hql = "SELECT cr FROM CreatureEntity cr Join FETCH cr.debuffs de " +
+//                 "WHERE cr.saturation <= 0 AND de.value = :debuffType";
+//         Query<CreatureEntity> query = session.createQuery(hql, CreatureEntity.class);
+//         query.setParameter("debuffType", DebuffType.starvation.name());
+         query.getResultStream().forEach(session::remove);
+         session.getTransaction().commit();
+      }
    }
 
    @Override
-   public void addStarvationDebuff() {
-
+   public void addStarvationDebuff(Debuff starvationDebuff) {
+      try (Session session = hibernateUtil.getSession()) {
+         session.beginTransaction();
+         String hql = "SELECT cr FROM CreatureEntity cr LEFT JOIN FETCH cr.debuffs de WHERE cr.saturation <= 0";
+         Query<CreatureEntity> query = session.createQuery(hql, CreatureEntity.class);
+         List<CreatureEntity> resultList = query.getResultList();
+         resultList.forEach(e -> {
+            e.getDebuffs().add(debuffEntityMapper.mapToEntity(starvationDebuff));
+            session.merge(e);
+         });
+         session.getTransaction().commit();
+      }
    }
 }

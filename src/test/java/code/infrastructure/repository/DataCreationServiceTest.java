@@ -115,7 +115,6 @@ public class DataCreationServiceTest {
          session.clear();
          // when
          dataCreationService.addRandomPoisoningDebuff(creature);
-         System.out.println("creature.getDebuffs():" + creature.getDebuffs());
          saturationRepository.updateDebuffs(List.of(creature));
          //then
          session.beginTransaction();

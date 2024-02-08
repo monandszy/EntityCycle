@@ -121,4 +121,12 @@ public class DataCreationService {
               .build();
       creature.getDebuffs().add(build);
    }
+
+   public Debuff getRandomStarvationDebuff() {
+      return Debuff.builder()
+              .debuffType(DebuffType.starvation)
+              .description("times have been rough")
+              .saturationDrain(getRandomNumber(10))
+              .build();
+   }
 }

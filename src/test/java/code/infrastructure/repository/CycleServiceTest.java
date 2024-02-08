@@ -1,11 +1,14 @@
 package code.infrastructure.repository;
 
 import code.business.domain.Creature;
+import code.business.domain.Debuff;
+import code.business.domain.DebuffType;
 import code.business.service.DataCreationService;
 import code.business.service.DatabaseService;
 import code.infrastructure.configuration.ApplicationConfiguration;
 import code.infrastructure.configuration.HibernateUtil;
 import code.infrastructure.database.entity.CreatureEntity;
+import code.infrastructure.database.entity.DebuffEntity;
 import code.infrastructure.database.entity.FoodEntity;
 import code.infrastructure.database.mapper.CreatureEntityMapper;
 import code.infrastructure.database.mapper.FoodEntityMapper;
@@ -140,13 +143,52 @@ class CycleServiceTest {
          Assertions.assertTrue(entity.getFoods().isEmpty());
          Assertions.assertEquals(OFFSPRING_FOOD_THRESHOLD - 1 + 10, entity.getSaturation());
       }
-
    }
 
    @Test
-   void testStarvation() {
-      saturationRepository.killStarving(); // if saturation <= 0 and starving -> kill
-      saturationRepository.addStarvationDebuff(); // one chance to survive starving kill
+   void testStarvationDeath() {
+      try (Session session = hibernateUtil.getSession()) {
+         //given
+         session.beginTransaction();
+         Creature creature = dataCreationService.getRandomCreature().withSaturation(-10);
+         CreatureEntity entity = creatureEntityMapper.mapToEntityWithAddress(creature);
+         entity.setDebuffs(Set.of(DebuffEntity.builder()
+                 .description("test")
+                 .saturationDrain(0)
+                 .value(DebuffType.starvation).build()));
+         session.persist(entity);
+         session.getTransaction().commit();
+         session.clear();
+         //when
+         Assertions.assertNotNull(entity);
+         saturationRepository.killStarving();
+         //then
+         session.beginTransaction();
+         entity = session.get(CreatureEntity.class, entity.getId());
+         session.getTransaction().commit();
+         Assertions.assertNull(entity);
+      }
+   }
+
+   @Test
+   void testStarvationDebuffAddition() {
+      try (Session session = hibernateUtil.getSession()) {
+         //given
+         Debuff randomStarvationDebuff = dataCreationService.getRandomStarvationDebuff().withSaturationDrain(5);
+         session.beginTransaction();
+         Creature creature = dataCreationService.getRandomCreature().withSaturation(-10);
+         CreatureEntity entity = creatureEntityMapper.mapToEntityWithAddress(creature);
+         session.persist(entity);
+         session.getTransaction().commit();
+         session.clear();
+         //when
+         saturationRepository.addStarvationDebuff(randomStarvationDebuff);
+         //then
+         session.beginTransaction();
+         entity = session.find(CreatureEntity.class, entity.getId());
+         session.getTransaction().commit();
+         Assertions.assertFalse(entity.getDebuffs().isEmpty());
+      }
    }
 
    @Test

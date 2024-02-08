@@ -59,6 +59,7 @@ public class ApplicationConfiguration {
       hibernateProperties.setProperty("hibernate.hbm2ddl.auto", environment.getProperty("hibernate.hbm2ddl.auto"));
       hibernateProperties.setProperty("hibernate.show_sql", environment.getProperty("hibernate.show_sql"));
       hibernateProperties.setProperty("hibernate.format_sql", environment.getProperty("hibernate.format_sql"));
+      hibernateProperties.setProperty("hibernate.connection.autocommit", environment.getProperty("hibernate.connection.autocommit"));
       return hibernateProperties;
    }
 
