@@ -14,7 +14,7 @@ import java.util.Set;
 @ToString(exclude = "foods")
 @EqualsAndHashCode(exclude = "foods")
 public class Creature {
-   String id;
+   Integer id;
    Integer age;
    String name;
    Integer saturation;

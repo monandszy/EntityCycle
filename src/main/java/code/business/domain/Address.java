@@ -10,7 +10,7 @@ import java.time.OffsetDateTime;
 @With
 @Value
 public class Address {
-   String id;
+   Integer id;
    String city;
    String postalCode;
    String street;

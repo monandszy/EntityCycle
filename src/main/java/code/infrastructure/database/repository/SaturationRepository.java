@@ -38,13 +38,16 @@ public class SaturationRepository implements SaturationDAO {
    public List<Creature> eatIfHungry() {
       try (Session session = hibernateUtil.getSession()) {
          session.beginTransaction();
-         String hql = "FROM CreatureEntity cr JOIN cr.foods WHERE cr.saturation < :threshold AND (size(cr.foods) != 0) and (size(cr.foods) != 0) is not null";
+         String hql = "SELECT cr FROM CreatureEntity cr INNER JOIN FETCH cr.foods WHERE cr.saturation < :threshold AND (size(cr.foods) != 0)";
          Query<CreatureEntity> query = session.createQuery(hql, CreatureEntity.class);
          query.setParameter("threshold", OFFSPRING_FOOD_THRESHOLD);
          List<CreatureEntity> resultList = query.getResultList();
+         System.out.println(resultList);
          resultList.forEach(e -> {
             FoodEntity foodEntity = e.getFoods().stream().findAny().orElseThrow();
-            e.setSaturation(e.getSaturation() + foodEntity.getNutritionalValue());
+            Integer nutritionalValue = foodEntity.getNutritionalValue();
+            e.setSaturation(e.getSaturation() + nutritionalValue);
+            e.getFoods().remove(foodEntity);
             session.remove(foodEntity);
             session.merge(e);
          });

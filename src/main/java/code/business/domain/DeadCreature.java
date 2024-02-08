@@ -8,7 +8,7 @@ import lombok.With;
 @With
 @Value
 public class DeadCreature {
-   String id;
+   Integer id;
    Integer cyclesLived;
    String name;
    Integer birthCycle;

@@ -68,7 +68,6 @@ public class DataCreationServiceTest {
          session.getTransaction().commit();
          session.clear();
          Creature creature = foodEntityMapper.mapFromEntityWithFood(entity);
-
          //when
          dataCreationService.addFood(List.of(creature));
          creatureRepository.updateFood(List.of(creature));
@@ -92,11 +91,9 @@ public class DataCreationServiceTest {
          //given
          int CREATURE_NUMBER = 3;
          List<Creature> creatures = dataCreationService.getRandomCreatureList(CREATURE_NUMBER);
-
          //when
          creatureRepository.addAll(creatures);
          session.flush();
-
          //then
          Query<CreatureEntity> query = session.createQuery("FROM CreatureEntity cr", CreatureEntity.class);
          List<CreatureEntity> resultList = query.getResultList();

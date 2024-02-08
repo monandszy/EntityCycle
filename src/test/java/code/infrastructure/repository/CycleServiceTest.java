@@ -6,7 +6,9 @@ import code.business.service.DatabaseService;
 import code.infrastructure.configuration.ApplicationConfiguration;
 import code.infrastructure.configuration.HibernateUtil;
 import code.infrastructure.database.entity.CreatureEntity;
+import code.infrastructure.database.entity.FoodEntity;
 import code.infrastructure.database.mapper.CreatureEntityMapper;
+import code.infrastructure.database.mapper.FoodEntityMapper;
 import code.infrastructure.database.repository.AgeRepository;
 import code.infrastructure.database.repository.CreatureRepository;
 import code.infrastructure.database.repository.SaturationRepository;
@@ -24,6 +26,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.List;
+import java.util.Set;
 
 import static code.business.management.InputData.OFFSPRING_FOOD_TAKEN;
 import static code.business.management.InputData.OFFSPRING_FOOD_THRESHOLD;
@@ -49,6 +52,7 @@ class CycleServiceTest {
    private final AgeRepository ageRepository;
    private final DataCreationService dataCreationService;
    private final CreatureEntityMapper creatureEntityMapper;
+   private final FoodEntityMapper foodEntityMapper;
    private final HibernateUtil hibernateUtil;
    private final DatabaseService databaseService;
 
@@ -111,7 +115,31 @@ class CycleServiceTest {
 
    @Test
    void testHungryEating() {
-      saturationRepository.eatIfHungry(); // remove food, recalculate saturation
+      Integer id;
+      try (Session session = hibernateUtil.getSession()) {
+         //given
+         session.beginTransaction();
+         session.persist(creatureEntityMapper.mapToEntityWithAddress(dataCreationService.getRandomCreature()));
+         Creature creature = dataCreationService.getRandomCreature().withSaturation(OFFSPRING_FOOD_THRESHOLD - 1);
+         CreatureEntity entity = creatureEntityMapper.mapToEntityWithAddress(creature);
+         session.persist(entity);
+         FoodEntity foodEntity = foodEntityMapper.mapToEntity(dataCreationService.getRandomFood().withNutritionalValue(10));
+         foodEntity.setCreature(entity);
+         session.persist(foodEntity);
+         session.getTransaction().commit();
+         id = entity.getId();
+      } // some update issues once again... flush doesn't work, clear doesn't work
+
+      try (Session session = hibernateUtil.getSession()) {
+         //when
+         saturationRepository.eatIfHungry();
+         //then
+         session.beginTransaction();
+         CreatureEntity entity = session.find(CreatureEntity.class, id);
+         session.getTransaction().commit();
+         Assertions.assertTrue(entity.getFoods().isEmpty());
+         Assertions.assertEquals(OFFSPRING_FOOD_THRESHOLD - 1 + 10, entity.getSaturation());
+      }
 
    }
 

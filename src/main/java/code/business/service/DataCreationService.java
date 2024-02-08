@@ -32,7 +32,7 @@ public class DataCreationService {
       }
    }
 
-   private Food getRandomFood() {
+   public Food getRandomFood() {
       return Food.builder()
               .description(getRandomString(20))
               .nutritionalValue(getRandomNumber(FOOD_NUTRITIONAL_VALUE_THRESHOLD))

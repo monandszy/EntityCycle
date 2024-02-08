@@ -8,7 +8,7 @@ import lombok.With;
 @Builder
 @With
 public class Food {
-   String id;
+   Integer id;
    Integer nutritionalValue;
    String description;
    Creature creature;
