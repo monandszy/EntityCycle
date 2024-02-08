@@ -65,6 +65,6 @@ CREATE TABLE entity_cycle.food
     description       TEXT   NOT NULL,
     creature_id       INT    NOT NULL,
     PRIMARY KEY (food_id),
-    CONSTRAINT fk_food_creature FOREIGN KEY (food_id)
+    CONSTRAINT fk_food_creature FOREIGN KEY (creature_id)
         REFERENCES entity_cycle.creature (creature_id)
 );

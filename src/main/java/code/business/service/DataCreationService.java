@@ -22,7 +22,7 @@ public class DataCreationService {
 
    public void addFood(List<Creature> prioritized) {
       for (Creature creature : prioritized) {
-         creature.getFoods().add(getRandomFood());
+         creature.getFoods().add(getRandomFood().withCreature(Creature.builder().id(creature.getId()).build()));
       }
    }
 
@@ -81,7 +81,6 @@ public class DataCreationService {
               .limit(length)
               .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
               .toString();
-
    }
 
    public int getRandomNumber(int top) {

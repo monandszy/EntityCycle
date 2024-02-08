@@ -67,9 +67,9 @@ dependencies {
     testCompileOnly "org.projectlombok:lombok:$lombokVersion"
     testAnnotationProcessor "org.projectlombok:lombok:$lombokVersion"
 
-    implementation "org.mapstruct:mapstruct:$mapstructVersion"
     annotationProcessor "org.mapstruct:mapstruct-processor:$mapstructVersion"
     annotationProcessor "org.projectlombok:lombok-mapstruct-binding:0.2.0"
+    implementation "org.mapstruct:mapstruct:$mapstructVersion"
 
     implementation "ch.qos.logback:logback-classic:$logbackVersion"
     implementation "org.slf4j:slf4j-api:1.7.36"

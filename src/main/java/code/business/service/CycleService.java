@@ -25,7 +25,6 @@ public class CycleService {
    private final AgeDAO ageDAO;
    private final DataCreationService dataCreationService;
 
-
    public void createCreatures() {
       Integer toBeCreatedCounter = creatureDAO.getOffspringNumber(); // remove 3 food if above threshold
       List<Creature> creatures = dataCreationService.getRandomCreatureList(toBeCreatedCounter);

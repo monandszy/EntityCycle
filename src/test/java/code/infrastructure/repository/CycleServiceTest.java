@@ -2,6 +2,7 @@ package code.infrastructure.repository;
 
 import code.business.domain.Creature;
 import code.business.service.DataCreationService;
+import code.business.service.DatabaseService;
 import code.infrastructure.configuration.ApplicationConfiguration;
 import code.infrastructure.configuration.HibernateUtil;
 import code.infrastructure.database.entity.CreatureEntity;
@@ -9,11 +10,8 @@ import code.infrastructure.database.mapper.CreatureEntityMapper;
 import code.infrastructure.database.repository.AgeRepository;
 import code.infrastructure.database.repository.CreatureRepository;
 import code.infrastructure.database.repository.SaturationRepository;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import lombok.AllArgsConstructor;
 import org.hibernate.Session;
-import org.hibernate.query.NativeQuery;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,9 +38,9 @@ class CycleServiceTest {
 
    @DynamicPropertySource
    static void postgreSQLProperties(DynamicPropertyRegistry registry) {
-      registry.add("jakarta.persistence.jdbc.url", postgreSQL::getJdbcUrl);
-      registry.add("jakarta.persistence.jdbc.user", postgreSQL::getUsername);
-      registry.add("jakarta.persistence.jdbc.password", postgreSQL::getPassword);
+      registry.add("jdbc.url", postgreSQL::getJdbcUrl);
+      registry.add("jdbc.user", postgreSQL::getUsername);
+      registry.add("jdbc.pass", postgreSQL::getPassword);
    }
 
    private final CreatureRepository creatureRepository;
@@ -51,22 +49,11 @@ class CycleServiceTest {
    private final DataCreationService dataCreationService;
    private final CreatureEntityMapper creatureEntityMapper;
    private final HibernateUtil hibernateUtil;
+   private final DatabaseService databaseService;
 
    @BeforeEach
-   void deleteAll() {
-      try (Session session = hibernateUtil.getSession()) {
-         session.beginTransaction();
-         NativeQuery nativeQuery = session.createNativeQuery("""
-                 DELETE FROM  entity_cycle.food WHERE 1=1;
-                 DELETE FROM  entity_cycle.injury WHERE 1=1;
-                 DELETE FROM  entity_cycle.creature WHERE 1=1;
-                 DELETE FROM  entity_cycle.debuff WHERE 1=1;
-                 DELETE FROM  entity_cycle.dead_creature WHERE 1=1;
-                 DELETE FROM  entity_cycle.address WHERE 1=1;
-                 """);
-         nativeQuery.executeUpdate();
-         session.getTransaction().commit();
-      }
+   void setUp() {
+      databaseService.deleteAll();
    }
 
    @Test
@@ -76,9 +63,9 @@ class CycleServiceTest {
          session.beginTransaction();
          //given
          Creature meetingCriteriaCreature = dataCreationService.getRandomCreature().withSaturation(OFFSPRING_FOOD_THRESHOLD);
-         CreatureEntity meetingEntity = creatureEntityMapper.mapToEntity(meetingCriteriaCreature);
+         CreatureEntity meetingEntity = creatureEntityMapper.mapToEntityWithAddress(meetingCriteriaCreature);
          Creature notMeetingCriteriaCreature = dataCreationService.getRandomCreature().withSaturation(0);
-         CreatureEntity notMeetingEntity = creatureEntityMapper.mapToEntity(notMeetingCriteriaCreature);
+         CreatureEntity notMeetingEntity = creatureEntityMapper.mapToEntityWithAddress(notMeetingCriteriaCreature);
          session.persist(meetingEntity);
          session.persist(notMeetingEntity);
          session.getTransaction().commit();
@@ -104,9 +91,9 @@ class CycleServiceTest {
          //given
          session.beginTransaction();
          Creature lessPriorityCreature = dataCreationService.getRandomCreature().withAge(100);
-         CreatureEntity lessEntity = creatureEntityMapper.mapToEntity(lessPriorityCreature);
+         CreatureEntity lessEntity = creatureEntityMapper.mapToEntityWithAddress(lessPriorityCreature);
          Creature priorityCreature = dataCreationService.getRandomCreature().withAge(1);
-         CreatureEntity entity = creatureEntityMapper.mapToEntity(priorityCreature);
+         CreatureEntity entity = creatureEntityMapper.mapToEntityWithAddress(priorityCreature);
          session.persist(lessEntity);
          session.persist(entity);
          session.getTransaction().commit();

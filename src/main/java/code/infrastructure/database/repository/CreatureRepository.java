@@ -5,6 +5,7 @@ import code.business.domain.Creature;
 import code.infrastructure.configuration.HibernateUtil;
 import code.infrastructure.database.entity.CreatureEntity;
 import code.infrastructure.database.mapper.CreatureEntityMapper;
+import code.infrastructure.database.mapper.FoodEntityMapper;
 import lombok.AllArgsConstructor;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
@@ -21,14 +22,14 @@ public class CreatureRepository implements CreatureDAO {
    public static final int OFFSPRING_FOOD_TAKEN = 5;
 
    private final CreatureEntityMapper creatureEntityMapper;
+   private final FoodEntityMapper foodEntityMapper;
    private final HibernateUtil hibernateUtil;
 
    @Override
    public Integer getOffspringNumber() {
       try (Session session = hibernateUtil.getSession()) {
          session.beginTransaction();
-         String hql = "SELECT cr FROM CreatureEntity cr WHERE cr.saturation >= :threshold"; // somehow not
-         String sql = "SELECT * From entity_cycle.creature as cr WHERE cr.saturation >= 1"; // works
+         String hql = "SELECT cr FROM CreatureEntity cr WHERE cr.saturation >= :threshold";
          Query<CreatureEntity> query = session.createQuery(hql, CreatureEntity.class);
          query.setParameter("threshold", OFFSPRING_FOOD_THRESHOLD);
          List<CreatureEntity> resultList = query.getResultList();
@@ -44,7 +45,7 @@ public class CreatureRepository implements CreatureDAO {
    public void addAll(List<Creature> creatures) {
       try (Session session = hibernateUtil.getSession()) {
          session.beginTransaction();
-         creatures.stream().map(creatureEntityMapper::mapToEntity).forEach(session::persist);
+         creatures.stream().map(creatureEntityMapper::mapToEntityWithAddress).forEach(session::persist);
          session.getTransaction().commit();
       }
    }
@@ -75,10 +76,10 @@ public class CreatureRepository implements CreatureDAO {
 
    @Override
    public void updateFood(List<Creature> prioritized) {
-      List<CreatureEntity> list = prioritized.stream().map(creatureEntityMapper::mapToEntity).toList();
       try (Session session = hibernateUtil.getSession()) {
+         List<CreatureEntity> list = prioritized.stream().map(foodEntityMapper::mapToEntityWithFood).toList();
          session.beginTransaction();
-         list.forEach(session::merge);
+         list.forEach(e -> e.getFoods().forEach(session::persist));
          session.getTransaction().commit();
       }
    }
@@ -87,7 +88,7 @@ public class CreatureRepository implements CreatureDAO {
       List<CreatureEntity> result;
       try (Session session = hibernateUtil.getSession()) {
          session.beginTransaction();
-          result = session.createQuery("FROM CreatureEntity ", CreatureEntity.class).getResultList();
+         result = session.createQuery("FROM CreatureEntity ", CreatureEntity.class).getResultList();
          session.getTransaction().commit();
       }
       return result.stream().map(creatureEntityMapper::mapFromEntity).toList();
