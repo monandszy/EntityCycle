@@ -31,6 +31,11 @@ public class CycleService {
       creatureDAO.addAll(creatures);
    }
 
+   public void createCreatures(int amount) {
+      List<Creature> creatures = dataCreationService.getRandomCreatureList(amount);
+      creatureDAO.addAll(creatures);
+   }
+
    public void assignFood() {
       List<Creature> prioritized = creatureDAO.getPrioritized(priorityLimit); // calculate prioritization
       dataCreationService.addFood(prioritized); // add piece of food to prioritized
@@ -48,10 +53,13 @@ public class CycleService {
    public void advanceAge() {
       ageDAO.advanceSaturation();
       ageDAO.advanceAge(); // move age by one
-      ageDAO.assignAgeDebuff(); // random
+      List<Creature> aged = ageDAO.getAged();// random
+      dataCreationService.addRandomAgeDebuffs(aged);
+      saturationDAO.updateDebuffs(aged);
    }
 
    public void runCycles(int cycleNumber) {
+      createCreatures(1);
       for (int i = 0; i < cycleNumber; i++) {
          createCreatures();
          assignFood();

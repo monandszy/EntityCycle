@@ -43,7 +43,6 @@ CREATE TABLE entity_cycle.debuff
          'starvation',
          'fracture'
             )),
-    UNIQUE (value),
     PRIMARY KEY (debuff_id)
 );
 

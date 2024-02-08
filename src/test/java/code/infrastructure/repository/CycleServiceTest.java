@@ -193,9 +193,46 @@ class CycleServiceTest {
 
    @Test
    void testAdvanceAge() {
-      ageRepository.advanceSaturation();
-      ageRepository.advanceAge(); // move age by one
-      ageRepository.assignAgeDebuff(); // random
+      try (Session session = hibernateUtil.getSession()) {
+         session.beginTransaction();
+         Creature randomCreature1 = dataCreationService.getRandomCreature().withAge(1).withSaturation(2);
+         CreatureEntity entity = creatureEntityMapper.mapToEntityWithAddress(randomCreature1);
+         session.persist(entity);
+         session.getTransaction().commit();
+         session.clear();
+         ageRepository.advanceSaturation();
+         ageRepository.advanceAge();
+
+         session.beginTransaction();
+         entity = session.find(CreatureEntity.class, entity.getId());
+         Assertions.assertEquals(entity.getAge(), 2);
+         Assertions.assertEquals(entity.getSaturation(), 0);
+         session.getTransaction().commit();
+      }
+   }
+
+   @Test
+   void testAssignAgeDebuff() {
+      try (Session session = hibernateUtil.getSession()) {
+         //given
+         session.beginTransaction();
+         Creature randomCreature = dataCreationService.getRandomCreature();
+         CreatureEntity entity1 = creatureEntityMapper.mapToEntityWithAddress(randomCreature);
+         session.persist(entity1);
+         session.getTransaction().commit();
+         session.clear();
+         CreatureEntity entity = entity1;
+         //when
+         List<Creature> aged = ageRepository.getAged();
+         dataCreationService.addAgeDebuff(aged.getFirst());
+         saturationRepository.updateDebuffs(aged);
+         //then
+         Assertions.assertEquals(aged.size(), 1);
+         session.getTransaction();
+         entity = session.find(CreatureEntity.class, entity.getId());
+         Assertions.assertFalse(entity.getDebuffs().isEmpty());
+
+      }
    }
 
 

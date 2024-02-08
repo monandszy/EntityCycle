@@ -52,7 +52,6 @@ public class CreatureRepository implements CreatureDAO {
 
    @Override
    public List<Creature> getPrioritized(int limit) {
-      List<CreatureEntity> result;
       try (Session session = hibernateUtil.getSession()) {
          session.beginTransaction();
          String sql = """
@@ -68,10 +67,10 @@ public class CreatureRepository implements CreatureDAO {
                   """;
          Query<CreatureEntity> query = session.createNativeQuery(sql, CreatureEntity.class);
          query.setParameter("limit", limit);
-         result = query.getResultList();
+         List<Creature> list = query.getResultList().stream().map(foodEntityMapper::mapFromEntityWithFood).toList();
          session.getTransaction().commit();
+         return list;
       }
-      return result.stream().map(creatureEntityMapper::mapFromEntity).toList();
    }
 
    @Override

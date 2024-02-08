@@ -96,7 +96,7 @@ public class DataCreationService {
 
    public void addRandomPoisoningDebuffs(List<Creature> creatures) {
       for (Creature creature : creatures) {
-         if (OFFSPRING_FOOD_THRESHOLD + creature.getSaturation()*2 > Math.random() * 1000D) {
+         if (OFFSPRING_FOOD_THRESHOLD + creature.getSaturation() * 2 > Math.random() * 1000D) {
             addRandomPoisoningDebuff(creature);
          }
       }
@@ -129,4 +129,26 @@ public class DataCreationService {
               .saturationDrain(getRandomNumber(10))
               .build();
    }
+
+   public void addRandomAgeDebuffs(List<Creature> aged) {
+      for (Creature creature : aged) {
+         if (Math.random() * 1000D < creature.getAge()*4)
+         if (Math.random() > 0.2) {
+            addAgeDebuff(creature);
+         } else {
+            Optional<Debuff> randomExistingDebuff = debuffDAO.getRandomDebuff(DebuffType.fracture);
+            if (randomExistingDebuff.isEmpty())
+               addAgeDebuff(creature);
+            else creature.getDebuffs().add(randomExistingDebuff.orElseThrow());
+         }
+      }
+   }
+
+   public void addAgeDebuff(Creature creature) {
+      Debuff build = Debuff.builder()
+              .debuffType(DebuffType.starvation)
+              .description("you're old enough to die, accept it")
+              .saturationDrain(getRandomNumber(20))
+              .build();
+      creature.getDebuffs().add(build);   }
 }
