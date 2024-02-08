@@ -13,4 +13,5 @@ public interface CreatureDAO {
 
    void updateFood(List<Creature> prioritized);
 
+   List<Creature> getAll();
 }

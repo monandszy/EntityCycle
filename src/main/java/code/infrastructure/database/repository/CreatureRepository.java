@@ -78,11 +78,17 @@ public class CreatureRepository implements CreatureDAO {
       try (Session session = hibernateUtil.getSession()) {
          List<CreatureEntity> list = prioritized.stream().map(foodEntityMapper::mapToEntityWithFood).toList();
          session.beginTransaction();
-         list.forEach(e -> e.getFoods().forEach(session::persist));
+         list.forEach(e -> {
+            e.getFoods().forEach(f -> {
+               f.setCreature(e);
+               session.merge(f);
+            });
+         });
          session.getTransaction().commit();
       }
    }
 
+   @Override
    public List<Creature> getAll() {
       List<CreatureEntity> result;
       try (Session session = hibernateUtil.getSession()) {

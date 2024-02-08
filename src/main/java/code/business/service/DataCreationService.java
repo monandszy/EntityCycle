@@ -22,9 +22,10 @@ import static code.business.management.InputData.OFFSPRING_FOOD_THRESHOLD;
 @AllArgsConstructor
 public class DataCreationService {
 
-   private static final int FOOD_NUTRITIONAL_VALUE_THRESHOLD = 10;
+   private static final int FOOD_NUTRITIONAL_VALUE_THRESHOLD = 15;
    private final AddressDAO addressDAO;
    private final DebuffDAO debuffDAO;
+
 
    public void addFood(List<Creature> prioritized) {
       for (Creature creature : prioritized) {
@@ -34,7 +35,7 @@ public class DataCreationService {
 
    public Food getRandomFood() {
       return Food.builder()
-              .description(getRandomString(20))
+              .description(getRandomString(3))
               .nutritionalValue(getRandomNumber(FOOD_NUTRITIONAL_VALUE_THRESHOLD))
               .build();
    }
@@ -90,8 +91,8 @@ public class DataCreationService {
    }
 
    public int getRandomNumber(int top) {
-      int i = Double.valueOf(Math.random()).intValue();
-      return top * i;
+      double i = Math.random() * (double) top;
+      return Double.valueOf(i).intValue();
    }
 
    public void addRandomPoisoningDebuffs(List<Creature> creatures) {

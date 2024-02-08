@@ -31,6 +31,6 @@ public class CycleRunnerTest {
    @Test
    void testCycle() {
       cycleService.createCreatures(1);
-      cycleService.runCycles(1);
+      cycleService.runCycles(10);
    }
 }

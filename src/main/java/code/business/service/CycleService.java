@@ -66,6 +66,8 @@ public class CycleService {
          calculateSaturation();
          advanceAge();
          currentCycle++;
+         System.out.println(creatureDAO.getAll());
+         System.out.println(creatureDAO.getAll().size());
       }
    }
 }

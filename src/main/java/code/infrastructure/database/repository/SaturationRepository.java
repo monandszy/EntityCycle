@@ -51,7 +51,6 @@ public class SaturationRepository implements SaturationDAO {
             e.setSaturation(e.getSaturation() + nutritionalValue);
             e.getFoods().remove(foodEntity);
             session.remove(foodEntity);
-            session.merge(e);
          });
          session.getTransaction().commit();
          return resultList.stream().map(debuffEntityMapper::mapFromEntityWithDebuff).toList();

@@ -44,6 +44,7 @@ public interface FoodEntityMapper {
               .collect(Collectors.toCollection(HashSet::new));
    }
 
+   @Mapping(target = "creature", ignore = true)
    Food mapFromEntity(FoodEntity foodEntity);
 
    @Named("foodToEntity")
