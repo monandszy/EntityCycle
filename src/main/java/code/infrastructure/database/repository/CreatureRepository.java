@@ -13,13 +13,14 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+import static code.business.management.InputData.OFFSPRING_FOOD_TAKEN;
+import static code.business.management.InputData.OFFSPRING_FOOD_THRESHOLD;
+
 
 @Component
 @AllArgsConstructor
 public class CreatureRepository implements CreatureDAO {
 
-   public static final int OFFSPRING_FOOD_THRESHOLD = 30;
-   public static final int OFFSPRING_FOOD_TAKEN = 5;
 
    private final CreatureEntityMapper creatureEntityMapper;
    private final FoodEntityMapper foodEntityMapper;
@@ -35,7 +36,6 @@ public class CreatureRepository implements CreatureDAO {
          List<CreatureEntity> resultList = query.getResultList();
          resultList.forEach(c -> c.setSaturation(c.getSaturation() - OFFSPRING_FOOD_TAKEN));
          resultList.forEach(session::merge);
-         resultList.forEach(System.out::println);
          session.getTransaction().commit();
          return resultList.size();
       }

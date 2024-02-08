@@ -1,8 +1,11 @@
 package code.business.service;
 
 import code.business.dao.AddressDAO;
+import code.business.dao.DebuffDAO;
 import code.business.domain.Address;
 import code.business.domain.Creature;
+import code.business.domain.Debuff;
+import code.business.domain.DebuffType;
 import code.business.domain.Food;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,12 +16,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
+import static code.business.management.InputData.OFFSPRING_FOOD_THRESHOLD;
+
 @Service
 @AllArgsConstructor
 public class DataCreationService {
 
    private static final int FOOD_NUTRITIONAL_VALUE_THRESHOLD = 10;
    private final AddressDAO addressDAO;
+   private final DebuffDAO debuffDAO;
 
    public void addFood(List<Creature> prioritized) {
       for (Creature creature : prioritized) {
@@ -88,4 +94,31 @@ public class DataCreationService {
       return top * i;
    }
 
+   public void addRandomPoisoningDebuffs(List<Creature> creatures) {
+      for (Creature creature : creatures) {
+         if (OFFSPRING_FOOD_THRESHOLD + creature.getSaturation()*2 > Math.random() * 1000D) {
+            addRandomPoisoningDebuff(creature);
+         }
+      }
+   }
+
+   public void addRandomPoisoningDebuff(Creature creature) {
+      if (Math.random() > 0.2) {
+         addPoisoningDebuff(creature);
+      } else {
+         Optional<Debuff> randomExistingDebuff = debuffDAO.getRandomDebuff(DebuffType.poisoning);
+         if (randomExistingDebuff.isEmpty())
+            addPoisoningDebuff(creature);
+         else creature.getDebuffs().add(randomExistingDebuff.orElseThrow());
+      }
+   }
+
+   public void addPoisoningDebuff(Creature creature) {
+      Debuff build = Debuff.builder()
+              .debuffType(DebuffType.poisoning)
+              .description("you've eaten smth bad, sorry")
+              .saturationDrain(getRandomNumber(5))
+              .build();
+      creature.getDebuffs().add(build);
+   }
 }

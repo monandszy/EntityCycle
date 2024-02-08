@@ -18,9 +18,11 @@ public interface FoodEntityMapper {
 
    @Mapping(source = "foods", target = "foods", qualifiedByName = "foodToNullMapper")
    @Mapping(target = "address", ignore = true)
+   @Mapping(target = "debuffs", ignore = true)
    CreatureEntity mapToEntityWithFood(Creature creature);
 
    @Mapping(target = "address", ignore = true)
+   @Mapping(target = "debuffs", ignore = true)
    @Mapping(source = "foods", target = "foods", qualifiedByName = "foodFromNullMapper")
    Creature mapFromEntityWithFood(CreatureEntity creatureEntity);
 

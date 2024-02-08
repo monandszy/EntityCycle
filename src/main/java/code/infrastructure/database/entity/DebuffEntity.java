@@ -35,12 +35,15 @@ public class DebuffEntity {
    @Column(name = "debuff_id")
    private Integer id;
 
+   @Column(name = "saturation_drain")
+   private Integer saturationDrain;
+
    @Column(name = "description")
    private String description;
 
    @Enumerated(EnumType.STRING)
-   @Column(name = "value")
-   private DebuffType type;
+   @Column(name = "value", unique = true)
+   private DebuffType value;
 
    @ManyToMany(mappedBy = "debuffs")
    private Set<CreatureEntity> creatures;

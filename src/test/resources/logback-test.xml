@@ -9,9 +9,9 @@
         </encoder>
     </appender>
 
-<!--    <logger name="org.hibernate.orm.jdbc.bind" additivity="false" level="TRACE">-->
-<!--        <appender-ref ref="CONSOLE"/>-->
-<!--    </logger>-->
+    <logger name="org.hibernate.orm.jdbc.bind" additivity="false" level="TRACE">
+        <appender-ref ref="CONSOLE"/>
+    </logger>
 
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
         <file>${HOME_LOG}</file>

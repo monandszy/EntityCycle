@@ -11,4 +11,5 @@ public class Debuff {
    Integer id;
    String description;
    DebuffType debuffType;
+   Integer saturationDrain;
 }

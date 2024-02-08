@@ -1,9 +1,13 @@
 package code.business.dao;
 
-public interface SaturationDAO {
-   void eatIfHungry();
+import code.business.domain.Creature;
 
-   void addFoodPoisoningDebuff();
+import java.util.List;
+
+public interface SaturationDAO {
+   List<Creature> eatIfHungry();
+
+   void updateDebuffs(List<Creature> creatures);
 
    void killStarving();
 

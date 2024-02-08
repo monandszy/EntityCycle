@@ -25,8 +25,9 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.List;
 
-import static code.infrastructure.database.repository.CreatureRepository.OFFSPRING_FOOD_TAKEN;
-import static code.infrastructure.database.repository.CreatureRepository.OFFSPRING_FOOD_THRESHOLD;
+import static code.business.management.InputData.OFFSPRING_FOOD_TAKEN;
+import static code.business.management.InputData.OFFSPRING_FOOD_THRESHOLD;
+
 
 @Testcontainers
 @SpringJUnitConfig(value = {ApplicationConfiguration.class})
@@ -111,7 +112,7 @@ class CycleServiceTest {
    @Test
    void testHungryEating() {
       saturationRepository.eatIfHungry(); // remove food, recalculate saturation
-      saturationRepository.addFoodPoisoningDebuff(); // random
+
    }
 
    @Test

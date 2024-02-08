@@ -58,7 +58,7 @@ public class CreatureEntity {
    @OneToMany(fetch = FetchType.LAZY, mappedBy = "creature", cascade = CascadeType.ALL)
    private Set<FoodEntity> foods;
 
-   @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+   @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
    @JoinTable(
            name = "injury",
            joinColumns = {@JoinColumn(name = "creature_id")},

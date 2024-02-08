@@ -21,4 +21,5 @@ public class Creature {
    Integer birthCycle;
    Address address;
    Set<Food> foods;
+   Set<Debuff> debuffs;
 }

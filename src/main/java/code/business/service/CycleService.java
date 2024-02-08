@@ -18,7 +18,7 @@ public class CycleService {
    @Getter
    @Setter
    private static Integer currentCycle = 0;
-   private final static Integer priorityLimit = 100;
+   private final static Integer priorityLimit = 20;
 
    private final CreatureDAO creatureDAO;
    private final SaturationDAO saturationDAO;
@@ -38,8 +38,9 @@ public class CycleService {
    }
 
    public void calculateSaturation() {
-      saturationDAO.eatIfHungry(); // remove food, recalculate saturation
-      saturationDAO.addFoodPoisoningDebuff(); // random
+      List<Creature> creatures = saturationDAO.eatIfHungry();// remove food, recalculate saturation
+      dataCreationService.addRandomPoisoningDebuffs(creatures); // random // abstraction layer
+      saturationDAO.updateDebuffs(creatures);
       saturationDAO.killStarving(); // if saturation <= 0 and starving -> kill
       saturationDAO.addStarvationDebuff(); // one chance to survive starving kill
    }

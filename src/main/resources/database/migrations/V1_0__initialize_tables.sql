@@ -32,17 +32,18 @@ CREATE TABLE entity_cycle.dead_creature
 
 CREATE TABLE entity_cycle.debuff
 (
-    debuff_id   SERIAL NOT NULL,
-    description TEXT   NOT NULL,
-    saturation_drain INT NOT NULL
+    debuff_id        SERIAL NOT NULL,
+    saturation_drain INT    NOT NULL,
+    description      TEXT   NOT NULL,
+    value            TEXT   NOT NULL,
     CONSTRAINT value_in CHECK (
-        description IN
+        value IN
         (
          'poisoning',
          'starvation',
          'fracture'
             )),
-    UNIQUE (description),
+    UNIQUE (value),
     PRIMARY KEY (debuff_id)
 );
 

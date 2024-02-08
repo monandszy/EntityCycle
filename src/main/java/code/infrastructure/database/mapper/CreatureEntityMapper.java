@@ -14,9 +14,11 @@ public interface CreatureEntityMapper {
 
    @Mapping(target = "address", ignore = true)
    @Mapping(target = "foods", ignore = true)
+   @Mapping(target = "debuffs", ignore = true)
    Creature mapFromEntity(CreatureEntity creatureEntity);
 
    @Mapping(target = "foods", ignore = true)
+   @Mapping(target = "debuffs", ignore = true)
    @Mapping(source = "address", target = "address", qualifiedByName = "addressToEntity")
    CreatureEntity mapToEntityWithAddress(Creature creature);
 

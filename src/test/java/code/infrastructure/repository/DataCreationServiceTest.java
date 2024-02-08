@@ -7,8 +7,10 @@ import code.infrastructure.configuration.ApplicationConfiguration;
 import code.infrastructure.configuration.HibernateUtil;
 import code.infrastructure.database.entity.CreatureEntity;
 import code.infrastructure.database.mapper.CreatureEntityMapper;
+import code.infrastructure.database.mapper.DebuffEntityMapper;
 import code.infrastructure.database.mapper.FoodEntityMapper;
 import code.infrastructure.database.repository.CreatureRepository;
+import code.infrastructure.database.repository.SaturationRepository;
 import lombok.AllArgsConstructor;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
@@ -23,6 +25,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.util.HashSet;
 import java.util.List;
 
 @SpringJUnitConfig(value = {ApplicationConfiguration.class})
@@ -32,7 +35,9 @@ public class DataCreationServiceTest {
 
    private final DataCreationService dataCreationService;
    private final CreatureRepository creatureRepository;
+   private final SaturationRepository saturationRepository;
    private final CreatureEntityMapper creatureEntityMapper;
+   private final DebuffEntityMapper debuffEntityMapper;
    private final FoodEntityMapper foodEntityMapper;
    private final HibernateUtil hibernateUtil;
    private final DatabaseService databaseService;
@@ -97,6 +102,32 @@ public class DataCreationServiceTest {
          List<CreatureEntity> resultList = query.getResultList();
          Assertions.assertEquals(CREATURE_NUMBER, resultList.size());
          session.getTransaction().commit();
+      }
+   }
+
+   @Test
+   void testDebuffUpdate() {
+      try (Session session = hibernateUtil.getSession()) {
+         //given
+         session.beginTransaction();
+         Creature creature = dataCreationService.getRandomCreature();
+         CreatureEntity entity = creatureEntityMapper.mapToEntityWithAddress(creature);
+         session.persist(entity);
+         session.getTransaction().commit();
+         creature = debuffEntityMapper.mapFromEntityWithDebuff(entity);
+         session.clear();
+         // when
+         dataCreationService.addRandomPoisoningDebuff(creature);
+         System.out.println("creature.getDebuffs():" + creature.getDebuffs());
+         saturationRepository.updateDebuffs(List.of(creature));
+         //then
+         session.beginTransaction();
+         String hql = "From CreatureEntity cr JOIN FETCH cr.debuffs WHERE cr.id = :id";
+         Query<CreatureEntity> query = session.createQuery(hql, CreatureEntity.class);
+         query.setParameter("id", entity.getId());
+         entity = query.getResultList().getFirst();
+         session.getTransaction().commit();
+         Assertions.assertFalse(entity.getDebuffs().isEmpty());
       }
    }
 }
