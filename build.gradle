@@ -25,8 +25,6 @@ ext {
     jakartaPersistenceApiVersion = '3.1.0'
     hibernateVersion = '6.4.1.Final'
     hikariVersion = '5.0.1'
-    ehcacheVersion = '3.10.8'
-    jaxbApiVersion = '2.3.1'
     flywayVersion = '10.5.0'
     testcontainersVersion = '1.19.3'
     mapstructVersion = '1.5.5.Final'
@@ -56,11 +54,6 @@ dependencies {
 
     implementation "org.hibernate.orm:hibernate-hikaricp:$hibernateVersion"
     implementation "com.zaxxer:HikariCP:$hikariVersion"
-
-    implementation "org.hibernate.orm:hibernate-jcache:$hibernateVersion"
-    implementation "org.ehcache:ehcache:$ehcacheVersion"
-    implementation "javax.xml.bind:jaxb-api:$jaxbApiVersion"
-    implementation "com.sun.xml.bind:jaxb-impl:$jaxbApiVersion"
 
     compileOnly "org.projectlombok:lombok:$lombokVersion"
     annotationProcessor "org.projectlombok:lombok:$lombokVersion"
